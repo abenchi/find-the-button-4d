@@ -1,0 +1,2800 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boxing Championship 🥊</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Condensed:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #1a1a2e;
+            font-family: 'Bebas Neue', sans-serif;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Menu Screen */
+        #menuScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            z-index: 100;
+        }
+
+        #menuScreen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23ffffff05" x="0" y="0" width="50" height="50"/><rect fill="%23ffffff05" x="50" y="50" width="50" height="50"/></svg>');
+            background-size: 60px 60px;
+            opacity: 0.3;
+        }
+
+        .menu-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 5rem;
+            color: #e94560;
+            text-shadow: 0 0 30px rgba(233, 69, 96, 0.5), 4px 4px 0 #16213e;
+            margin-bottom: 1rem;
+            letter-spacing: 8px;
+            animation: titlePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .subtitle {
+            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 1.5rem;
+            color: #a2a2a2;
+            margin-bottom: 3rem;
+            letter-spacing: 3px;
+        }
+
+        .difficulty-label {
+            font-size: 2rem;
+            color: #eee;
+            margin-bottom: 1.5rem;
+            letter-spacing: 4px;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .diff-btn {
+            padding: 1rem 2.5rem;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            border: 3px solid;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .diff-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .diff-btn:hover::before {
+            left: 0;
+        }
+
+        .diff-btn.easy {
+            color: #4ade80;
+            border-color: #4ade80;
+        }
+
+        .diff-btn.easy::before {
+            background: #4ade80;
+        }
+
+        .diff-btn.easy:hover {
+            color: #1a1a2e;
+        }
+
+        .diff-btn.easy.selected {
+            background: #4ade80;
+            color: #1a1a2e;
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+        }
+
+        .diff-btn.medium {
+            color: #fbbf24;
+            border-color: #fbbf24;
+        }
+
+        .diff-btn.medium::before {
+            background: #fbbf24;
+        }
+
+        .diff-btn.medium:hover {
+            color: #1a1a2e;
+        }
+
+        .diff-btn.medium.selected {
+            background: #fbbf24;
+            color: #1a1a2e;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+        }
+
+        .diff-btn.hard {
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .diff-btn.hard::before {
+            background: #ef4444;
+        }
+
+        .diff-btn.hard:hover {
+            color: #1a1a2e;
+        }
+
+        .diff-btn.hard.selected {
+            background: #ef4444;
+            color: #1a1a2e;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+        }
+
+        .menu-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .play-btn {
+            padding: 1.5rem 4rem;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 6px;
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 0 #15803d, 0 15px 30px rgba(34, 197, 94, 0.3);
+        }
+
+        .play-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 11px 0 #15803d, 0 20px 40px rgba(34, 197, 94, 0.4);
+        }
+
+        .play-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #15803d, 0 8px 20px rgba(34, 197, 94, 0.3);
+        }
+
+        .tutorial-btn {
+            padding: 1.5rem 3rem;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 6px;
+            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 0 #1d4ed8, 0 15px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .tutorial-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 11px 0 #1d4ed8, 0 20px 40px rgba(59, 130, 246, 0.4);
+        }
+
+        .tutorial-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #1d4ed8, 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Tutorial UI */
+        #tutorialUI {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 150;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .tutorial-instruction {
+            background: rgba(0, 0, 0, 0.85);
+            border: 3px solid #3b82f6;
+            border-radius: 15px;
+            padding: 1.5rem 3rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .tutorial-instruction h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+            letter-spacing: 3px;
+        }
+
+        .tutorial-instruction p {
+            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 1.3rem;
+            color: #fff;
+            margin: 0;
+        }
+
+        .tutorial-instruction .key-hint {
+            display: inline-block;
+            background: #3b82f6;
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            margin: 0 0.3rem;
+            font-weight: bold;
+        }
+
+        .tutorial-skip-btn {
+            pointer-events: auto;
+            padding: 0.8rem 2rem;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.3rem;
+            letter-spacing: 3px;
+            background: rgba(100, 100, 100, 0.8);
+            color: white;
+            border: 2px solid #888;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tutorial-skip-btn:hover {
+            background: rgba(150, 150, 150, 0.9);
+            transform: scale(1.05);
+        }
+
+        .tutorial-progress {
+            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 1rem;
+            color: #888;
+            margin-top: 0.5rem;
+        }
+
+        /* Language Selection Screen */
+        #languageScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            z-index: 500;
+        }
+
+        #languageScreen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23ffffff05" x="0" y="0" width="50" height="50"/><rect fill="%23ffffff05" x="50" y="50" width="50" height="50"/></svg>');
+            background-size: 60px 60px;
+            opacity: 0.3;
+        }
+
+        .language-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .language-title {
+            font-size: 3rem;
+            color: #e94560;
+            text-shadow: 0 0 30px rgba(233, 69, 96, 0.5);
+            margin-bottom: 0.5rem;
+            letter-spacing: 4px;
+        }
+
+        .language-subtitle {
+            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 1.2rem;
+            color: #888;
+            margin-bottom: 2.5rem;
+            letter-spacing: 2px;
+        }
+
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            max-width: 600px;
+        }
+
+        .lang-btn {
+            padding: 1rem 1.5rem;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .lang-btn:hover {
+            background: rgba(233, 69, 96, 0.3);
+            border-color: #e94560;
+            transform: scale(1.05);
+        }
+
+        .lang-btn .flag {
+            font-size: 1.5rem;
+        }
+
+        /* RTL Support for Arabic */
+        [dir="rtl"] .controls-info {
+            direction: rtl;
+        }
+
+        [dir="rtl"] .tutorial-skip-btn {
+            direction: rtl;
+        }
+
+        [dir="rtl"] .update-list {
+            text-align: right;
+        }
+
+        .controls-info {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #666;
+            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+
+        .controls-info span {
+            color: #e94560;
+            background: #2a2a4e;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            margin: 0 0.3rem;
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Result Screen */
+        #resultScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+        }
+
+        .result-text {
+            font-size: 10rem;
+            letter-spacing: 20px;
+            animation: resultBounce 0.5s ease;
+        }
+
+        .result-text.win {
+            color: #22c55e;
+            text-shadow: 0 0 50px rgba(34, 197, 94, 0.8);
+        }
+
+        .result-text.lose {
+            color: #ef4444;
+            text-shadow: 0 0 50px rgba(239, 68, 68, 0.8);
+        }
+
+        @keyframes resultBounce {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .restart-btn {
+            margin-top: 3rem;
+            padding: 1rem 3rem;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 4px;
+            background: #e94560;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            background: #ff6b8a;
+            transform: scale(1.05);
+        }
+
+        /* Update Modal */
+        #updateModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+        }
+
+        .update-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid #e94560;
+            border-radius: 15px;
+            padding: 2.5rem;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(233, 69, 96, 0.3);
+            animation: modalSlide 0.4s ease;
+        }
+
+        @keyframes modalSlide {
+            0% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .update-title {
+            font-size: 2.5rem;
+            color: #e94560;
+            margin-bottom: 0.5rem;
+            letter-spacing: 4px;
+        }
+
+        .update-version {
+            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 1.2rem;
+            color: #fbbf24;
+            margin-bottom: 1.5rem;
+        }
+
+        .update-list {
+            text-align: left;
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .update-list li {
+            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 1rem;
+            color: #e0e0e0;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .update-list li:last-child {
+            border-bottom: none;
+        }
+
+        .update-close-btn {
+            padding: 0.8rem 2.5rem;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+        }
+
+        .update-close-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Language Selection Screen -->
+    <div id="languageScreen">
+        <div class="language-content">
+            <h1 class="language-title">🌍 SELECT YOUR LANGUAGE</h1>
+            <p class="language-subtitle">Choisissez votre langue • Choose your language</p>
+            <div class="language-grid">
+                <button class="lang-btn" data-lang="fr"><span class="flag">🇫🇷</span> Français</button>
+                <button class="lang-btn" data-lang="en"><span class="flag">🇬🇧</span> English</button>
+                <button class="lang-btn" data-lang="de"><span class="flag">🇩🇪</span> Deutsch</button>
+                <button class="lang-btn" data-lang="es"><span class="flag">🇪🇸</span> Español</button>
+                <button class="lang-btn" data-lang="it"><span class="flag">🇮🇹</span> Italiano</button>
+                <button class="lang-btn" data-lang="ar"><span class="flag">🇸🇦</span> العربية</button>
+                <button class="lang-btn" data-lang="zh"><span class="flag">🇨🇳</span> 中文</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Screen -->
+    <div id="menuScreen" class="hidden">
+        <div class="menu-content">
+            <h1 class="game-title" data-translate="gameTitle">BOXING CHAMPION</h1>
+            <p class="subtitle" data-translate="subtitle">🥊 PRÉPAREZ-VOUS À COMBATTRE 🥊</p>
+
+            <p class="difficulty-label" data-translate="difficultyLabel">CHOISISSEZ VOTRE NIVEAU</p>
+            <div class="difficulty-buttons">
+                <button class="diff-btn easy" data-difficulty="easy" data-translate="easy">FACILE</button>
+                <button class="diff-btn medium selected" data-difficulty="medium" data-translate="medium">MOYEN</button>
+                <button class="diff-btn hard" data-difficulty="hard" data-translate="hard">DIFFICILE</button>
+            </div>
+
+            <div class="menu-buttons">
+                <button class="play-btn" id="playBtn" data-translate="play">JOUER</button>
+                <button class="tutorial-btn" id="tutorialBtn" data-translate="tutorial">TUTORIEL</button>
+            </div>
+        </div>
+
+        <div class="controls-info" id="controlsInfo">
+            <span>←→</span> <span data-translate="ctrlMove">Déplacer</span> &nbsp;&nbsp;
+            <span>↑</span> <span data-translate="ctrlJump">Sauter</span> &nbsp;&nbsp;
+            <span data-translate="ctrlSpace">ESPACE</span> <span data-translate="ctrlPunch">Poing</span> &nbsp;&nbsp;
+            <span>N</span> <span data-translate="ctrlKick">Pied</span> &nbsp;&nbsp;
+            <span>M</span> <span data-translate="ctrlBlock">Défense</span> &nbsp;&nbsp;
+            <span>B</span> <span data-translate="ctrlCharge">Recharge</span>
+        </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="resultScreen" class="hidden">
+        <div class="result-text" id="resultText">WIN</div>
+        <button class="restart-btn" id="restartBtn" data-translate="replay">REJOUER</button>
+    </div>
+
+    <!-- Update Modal -->
+    <div id="updateModal" class="hidden">
+        <div class="update-content">
+            <h2 class="update-title" data-translate="updateTitle">🎉 NOUVELLE MISE À JOUR !</h2>
+            <p class="update-version" id="updateVersion">Version 1.2.0</p>
+            <ul class="update-list" id="updateList">
+                <!-- Populated by JavaScript -->
+            </ul>
+            <button class="update-close-btn" id="closeUpdateBtn" data-translate="letsGo">C'EST PARTI !</button>
+        </div>
+    </div>
+
+    <!-- Tutorial UI -->
+    <div id="tutorialUI" class="hidden">
+        <div class="tutorial-instruction">
+            <h3 id="tutorialTitle">TUTORIEL</h3>
+            <p id="tutorialText">Instruction ici</p>
+        </div>
+        <button class="tutorial-skip-btn" id="tutorialSkipBtn" data-translate="skip">PASSER →</button>
+        <div class="tutorial-progress" id="tutorialProgress">Étape 1/8</div>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        // ============================================
+        // TRANSLATION SYSTEM
+        // ============================================
+        let currentLanguage = 'fr';
+
+        const TRANSLATIONS = {
+            fr: {
+                // Menu
+                gameTitle: "BOXING CHAMPION",
+                subtitle: "🥊 PRÉPAREZ-VOUS À COMBATTRE 🥊",
+                difficultyLabel: "CHOISISSEZ VOTRE NIVEAU",
+                easy: "FACILE",
+                medium: "MOYEN",
+                hard: "DIFFICILE",
+                play: "JOUER",
+                tutorial: "TUTORIEL",
+                replay: "REJOUER",
+                // Controls
+                ctrlMove: "Déplacer",
+                ctrlJump: "Sauter",
+                ctrlSpace: "ESPACE",
+                ctrlPunch: "Poing",
+                ctrlKick: "Pied",
+                ctrlBlock: "Défense",
+                ctrlCharge: "Recharge",
+                // Results
+                win: "VICTOIRE",
+                lose: "DÉFAITE",
+                // Update modal
+                updateTitle: "🎉 NOUVELLE MISE À JOUR !",
+                letsGo: "C'EST PARTI !",
+                // Tutorial
+                skip: "PASSER →",
+                stepProgress: "Étape",
+                wellDone: "✓ BIEN JOUÉ !",
+                // Tutorial steps
+                tutorialWelcomeTitle: "BIENVENUE !",
+                tutorialWelcomeText: "Bienvenue dans le tutoriel ! Apprenez les bases du combat.",
+                tutorialMoveTitle: "DÉPLACEMENT",
+                tutorialMoveText: "Utilisez <span class='key-hint'>←</span> et <span class='key-hint'>→</span> pour vous déplacer.",
+                tutorialJumpTitle: "SAUT",
+                tutorialJumpText: "Appuyez sur <span class='key-hint'>↑</span> pour sauter et esquiver !",
+                tutorialPunchTitle: "COUP DE POING",
+                tutorialPunchText: "Appuyez sur <span class='key-hint'>ESPACE</span> pour donner un coup de poing !",
+                tutorialKickTitle: "COUP DE PIED",
+                tutorialKickText: "Appuyez sur <span class='key-hint'>N</span> pour un coup de pied puissant !",
+                tutorialBlockTitle: "DÉFENSE",
+                tutorialBlockText: "Maintenez <span class='key-hint'>M</span> pour vous défendre !",
+                tutorialChargeTitle: "RECHARGE",
+                tutorialChargeText: "Maintenez <span class='key-hint'>B</span> pour recharger votre endurance !",
+                tutorialEndTitle: "FÉLICITATIONS !",
+                tutorialEndText: "Vous maîtrisez les bases ! Retournez au menu et combattez !",
+                // UI Labels
+                player: "JOUEUR",
+                bot: "BOT",
+                round: "ROUND",
+                go: "GO!",
+                criticalHit: "COUP CRITIQUE!",
+                // Update notes
+                updateNotes: [
+                    "🎵 MUSIQUE ÉPIQUE totalement refaite !",
+                    "💀 Musique OPPRESSANTE quand la fin est proche !",
+                    "👥 FOULE EN DÉLIRE avec cris de joie !",
+                    "🔊 Effets sonores massifs et immersifs",
+                    "🎭 Ambiance de stade ultra réaliste !"
+                ]
+            },
+            en: {
+                gameTitle: "BOXING CHAMPION",
+                subtitle: "🥊 GET READY TO FIGHT 🥊",
+                difficultyLabel: "CHOOSE YOUR LEVEL",
+                easy: "EASY",
+                medium: "MEDIUM",
+                hard: "HARD",
+                play: "PLAY",
+                tutorial: "TUTORIAL",
+                replay: "PLAY AGAIN",
+                ctrlMove: "Move",
+                ctrlJump: "Jump",
+                ctrlSpace: "SPACE",
+                ctrlPunch: "Punch",
+                ctrlKick: "Kick",
+                ctrlBlock: "Block",
+                ctrlCharge: "Charge",
+                win: "VICTORY",
+                lose: "DEFEAT",
+                updateTitle: "🎉 NEW UPDATE!",
+                letsGo: "LET'S GO!",
+                skip: "SKIP →",
+                stepProgress: "Step",
+                wellDone: "✓ WELL DONE!",
+                tutorialWelcomeTitle: "WELCOME!",
+                tutorialWelcomeText: "Welcome to the tutorial! Learn the basics of combat.",
+                tutorialMoveTitle: "MOVEMENT",
+                tutorialMoveText: "Use <span class='key-hint'>←</span> and <span class='key-hint'>→</span> to move.",
+                tutorialJumpTitle: "JUMP",
+                tutorialJumpText: "Press <span class='key-hint'>↑</span> to jump and dodge!",
+                tutorialPunchTitle: "PUNCH",
+                tutorialPunchText: "Press <span class='key-hint'>SPACE</span> to throw a punch!",
+                tutorialKickTitle: "KICK",
+                tutorialKickText: "Press <span class='key-hint'>N</span> for a powerful kick!",
+                tutorialBlockTitle: "BLOCK",
+                tutorialBlockText: "Hold <span class='key-hint'>M</span> to defend yourself!",
+                tutorialChargeTitle: "CHARGE",
+                tutorialChargeText: "Hold <span class='key-hint'>B</span> to recharge your stamina!",
+                tutorialEndTitle: "CONGRATULATIONS!",
+                tutorialEndText: "You've mastered the basics! Return to menu and fight!",
+                player: "PLAYER",
+                bot: "BOT",
+                round: "ROUND",
+                go: "GO!",
+                criticalHit: "CRITICAL HIT!",
+                updateNotes: [
+                    "🎵 Completely revamped EPIC MUSIC!",
+                    "💀 OPPRESSIVE music when death is near!",
+                    "👥 ROARING CROWD with cheers of joy!",
+                    "🔊 Massive immersive sound effects",
+                    "🎭 Ultra realistic stadium atmosphere!"
+                ]
+            },
+            de: {
+                gameTitle: "BOXING CHAMPION",
+                subtitle: "🥊 MACHT EUCH BEREIT ZUM KÄMPFEN 🥊",
+                difficultyLabel: "WÄHLE DEIN LEVEL",
+                easy: "LEICHT",
+                medium: "MITTEL",
+                hard: "SCHWER",
+                play: "SPIELEN",
+                tutorial: "TUTORIAL",
+                replay: "NOCHMAL",
+                ctrlMove: "Bewegen",
+                ctrlJump: "Springen",
+                ctrlSpace: "LEERTASTE",
+                ctrlPunch: "Schlag",
+                ctrlKick: "Tritt",
+                ctrlBlock: "Block",
+                ctrlCharge: "Aufladen",
+                win: "SIEG",
+                lose: "NIEDERLAGE",
+                updateTitle: "🎉 NEUES UPDATE!",
+                letsGo: "LOS GEHT'S!",
+                skip: "ÜBERSPRINGEN →",
+                stepProgress: "Schritt",
+                wellDone: "✓ GUT GEMACHT!",
+                tutorialWelcomeTitle: "WILLKOMMEN!",
+                tutorialWelcomeText: "Willkommen zum Tutorial! Lerne die Grundlagen des Kampfes.",
+                tutorialMoveTitle: "BEWEGUNG",
+                tutorialMoveText: "Benutze <span class='key-hint'>←</span> und <span class='key-hint'>→</span> zum Bewegen.",
+                tutorialJumpTitle: "SPRUNG",
+                tutorialJumpText: "Drücke <span class='key-hint'>↑</span> zum Springen!",
+                tutorialPunchTitle: "FAUSTSCHLAG",
+                tutorialPunchText: "Drücke <span class='key-hint'>LEERTASTE</span> für einen Schlag!",
+                tutorialKickTitle: "TRITT",
+                tutorialKickText: "Drücke <span class='key-hint'>N</span> für einen starken Tritt!",
+                tutorialBlockTitle: "BLOCKIEREN",
+                tutorialBlockText: "Halte <span class='key-hint'>M</span> zum Verteidigen!",
+                tutorialChargeTitle: "AUFLADEN",
+                tutorialChargeText: "Halte <span class='key-hint'>B</span> zum Aufladen der Ausdauer!",
+                tutorialEndTitle: "GLÜCKWUNSCH!",
+                tutorialEndText: "Du beherrschst die Grundlagen! Zurück zum Menü und kämpfe!",
+                player: "SPIELER",
+                bot: "BOT",
+                round: "RUNDE",
+                go: "LOS!",
+                criticalHit: "KRITISCHER TREFFER!",
+                updateNotes: [
+                    "🎵 Komplett überarbeitete EPISCHE MUSIK!",
+                    "💀 BEDRÜCKENDE Musik wenn das Ende naht!",
+                    "👥 JUBELNDE MENGE mit Freudenschreien!",
+                    "🔊 Massive immersive Soundeffekte",
+                    "🎭 Ultra realistische Stadionatmosphäre!"
+                ]
+            },
+            es: {
+                gameTitle: "BOXING CHAMPION",
+                subtitle: "🥊 ¡PREPÁRATE PARA PELEAR! 🥊",
+                difficultyLabel: "ELIGE TU NIVEL",
+                easy: "FÁCIL",
+                medium: "MEDIO",
+                hard: "DIFÍCIL",
+                play: "JUGAR",
+                tutorial: "TUTORIAL",
+                replay: "REPETIR",
+                ctrlMove: "Mover",
+                ctrlJump: "Saltar",
+                ctrlSpace: "ESPACIO",
+                ctrlPunch: "Puño",
+                ctrlKick: "Patada",
+                ctrlBlock: "Defensa",
+                ctrlCharge: "Cargar",
+                win: "VICTORIA",
+                lose: "DERROTA",
+                updateTitle: "🎉 ¡NUEVA ACTUALIZACIÓN!",
+                letsGo: "¡VAMOS!",
+                skip: "SALTAR →",
+                stepProgress: "Paso",
+                wellDone: "✓ ¡BIEN HECHO!",
+                tutorialWelcomeTitle: "¡BIENVENIDO!",
+                tutorialWelcomeText: "¡Bienvenido al tutorial! Aprende los fundamentos del combate.",
+                tutorialMoveTitle: "MOVIMIENTO",
+                tutorialMoveText: "Usa <span class='key-hint'>←</span> y <span class='key-hint'>→</span> para moverte.",
+                tutorialJumpTitle: "SALTO",
+                tutorialJumpText: "¡Pulsa <span class='key-hint'>↑</span> para saltar y esquivar!",
+                tutorialPunchTitle: "PUÑETAZO",
+                tutorialPunchText: "¡Pulsa <span class='key-hint'>ESPACIO</span> para dar un puñetazo!",
+                tutorialKickTitle: "PATADA",
+                tutorialKickText: "¡Pulsa <span class='key-hint'>N</span> para una patada potente!",
+                tutorialBlockTitle: "DEFENSA",
+                tutorialBlockText: "¡Mantén <span class='key-hint'>M</span> para defenderte!",
+                tutorialChargeTitle: "CARGAR",
+                tutorialChargeText: "¡Mantén <span class='key-hint'>B</span> para recargar tu resistencia!",
+                tutorialEndTitle: "¡FELICIDADES!",
+                tutorialEndText: "¡Dominas los fundamentos! ¡Vuelve al menú y pelea!",
+                player: "JUGADOR",
+                bot: "BOT",
+                round: "RONDA",
+                go: "¡YA!",
+                criticalHit: "¡GOLPE CRÍTICO!",
+                updateNotes: [
+                    "🎵 ¡MÚSICA ÉPICA completamente renovada!",
+                    "💀 ¡Música OPRESIVA cuando el fin está cerca!",
+                    "👥 ¡MULTITUD RUGIENDO con gritos de alegría!",
+                    "🔊 Efectos de sonido masivos e inmersivos",
+                    "🎭 ¡Atmósfera de estadio ultra realista!"
+                ]
+            },
+            it: {
+                gameTitle: "BOXING CHAMPION",
+                subtitle: "🥊 PREPARATI A COMBATTERE 🥊",
+                difficultyLabel: "SCEGLI IL TUO LIVELLO",
+                easy: "FACILE",
+                medium: "MEDIO",
+                hard: "DIFFICILE",
+                play: "GIOCA",
+                tutorial: "TUTORIAL",
+                replay: "RIGIOCA",
+                ctrlMove: "Muovi",
+                ctrlJump: "Salta",
+                ctrlSpace: "SPAZIO",
+                ctrlPunch: "Pugno",
+                ctrlKick: "Calcio",
+                ctrlBlock: "Difesa",
+                ctrlCharge: "Ricarica",
+                win: "VITTORIA",
+                lose: "SCONFITTA",
+                updateTitle: "🎉 NUOVO AGGIORNAMENTO!",
+                letsGo: "ANDIAMO!",
+                skip: "SALTA →",
+                stepProgress: "Passo",
+                wellDone: "✓ BEN FATTO!",
+                tutorialWelcomeTitle: "BENVENUTO!",
+                tutorialWelcomeText: "Benvenuto nel tutorial! Impara le basi del combattimento.",
+                tutorialMoveTitle: "MOVIMENTO",
+                tutorialMoveText: "Usa <span class='key-hint'>←</span> e <span class='key-hint'>→</span> per muoverti.",
+                tutorialJumpTitle: "SALTO",
+                tutorialJumpText: "Premi <span class='key-hint'>↑</span> per saltare e schivare!",
+                tutorialPunchTitle: "PUGNO",
+                tutorialPunchText: "Premi <span class='key-hint'>SPAZIO</span> per dare un pugno!",
+                tutorialKickTitle: "CALCIO",
+                tutorialKickText: "Premi <span class='key-hint'>N</span> per un calcio potente!",
+                tutorialBlockTitle: "DIFESA",
+                tutorialBlockText: "Tieni premuto <span class='key-hint'>M</span> per difenderti!",
+                tutorialChargeTitle: "RICARICA",
+                tutorialChargeText: "Tieni premuto <span class='key-hint'>B</span> per ricaricare la resistenza!",
+                tutorialEndTitle: "CONGRATULAZIONI!",
+                tutorialEndText: "Hai imparato le basi! Torna al menu e combatti!",
+                player: "GIOCATORE",
+                bot: "BOT",
+                round: "ROUND",
+                go: "VIA!",
+                criticalHit: "COLPO CRITICO!",
+                updateNotes: [
+                    "🎵 MUSICA EPICA completamente rinnovata!",
+                    "💀 Musica OPPRIMENTE quando la fine è vicina!",
+                    "👥 FOLLA RUGGENTE con grida di gioia!",
+                    "🔊 Effetti sonori massicci e immersivi",
+                    "🎭 Atmosfera da stadio ultra realistica!"
+                ]
+            },
+            ar: {
+                gameTitle: "بطل الملاكمة",
+                subtitle: "🥊 استعد للقتال 🥊",
+                difficultyLabel: "اختر مستواك",
+                easy: "سهل",
+                medium: "متوسط",
+                hard: "صعب",
+                play: "العب",
+                tutorial: "تعليمي",
+                replay: "إعادة",
+                ctrlMove: "تحرك",
+                ctrlJump: "قفز",
+                ctrlSpace: "مسافة",
+                ctrlPunch: "لكمة",
+                ctrlKick: "ركلة",
+                ctrlBlock: "دفاع",
+                ctrlCharge: "شحن",
+                win: "فوز",
+                lose: "هزيمة",
+                updateTitle: "🎉 تحديث جديد!",
+                letsGo: "!هيا بنا",
+                skip: "← تخطي",
+                stepProgress: "خطوة",
+                wellDone: "✓ أحسنت!",
+                tutorialWelcomeTitle: "!مرحبا",
+                tutorialWelcomeText: "مرحبا بك في التعليمي! تعلم أساسيات القتال.",
+                tutorialMoveTitle: "الحركة",
+                tutorialMoveText: "استخدم <span class='key-hint'>←</span> و <span class='key-hint'>→</span> للتحرك.",
+                tutorialJumpTitle: "القفز",
+                tutorialJumpText: "!اضغط <span class='key-hint'>↑</span> للقفز والمراوغة",
+                tutorialPunchTitle: "اللكمة",
+                tutorialPunchText: "!اضغط <span class='key-hint'>مسافة</span> للكم",
+                tutorialKickTitle: "الركلة",
+                tutorialKickText: "!اضغط <span class='key-hint'>N</span> لركلة قوية",
+                tutorialBlockTitle: "الدفاع",
+                tutorialBlockText: "!امسك <span class='key-hint'>M</span> للدفاع",
+                tutorialChargeTitle: "الشحن",
+                tutorialChargeText: "!امسك <span class='key-hint'>B</span> لشحن طاقتك",
+                tutorialEndTitle: "!تهانينا",
+                tutorialEndText: "!لقد أتقنت الأساسيات! عد إلى القائمة وقاتل",
+                player: "اللاعب",
+                bot: "الخصم",
+                round: "جولة",
+                go: "!انطلق",
+                criticalHit: "!ضربة حرجة",
+                updateNotes: [
+                    "🎵 موسيقى ملحمية جديدة بالكامل!",
+                    "💀 موسيقى قمعية عندما تقترب النهاية!",
+                    "👥 جمهور هائج مع صرخات الفرح!",
+                    "🔊 مؤثرات صوتية ضخمة وغامرة",
+                    "🎭 أجواء ملعب واقعية للغاية!"
+                ]
+            },
+            zh: {
+                gameTitle: "拳击冠军",
+                subtitle: "🥊 准备战斗 🥊",
+                difficultyLabel: "选择难度",
+                easy: "简单",
+                medium: "中等",
+                hard: "困难",
+                play: "开始",
+                tutorial: "教程",
+                replay: "重玩",
+                ctrlMove: "移动",
+                ctrlJump: "跳跃",
+                ctrlSpace: "空格",
+                ctrlPunch: "拳击",
+                ctrlKick: "踢腿",
+                ctrlBlock: "防御",
+                ctrlCharge: "充能",
+                win: "胜利",
+                lose: "失败",
+                updateTitle: "🎉 新更新！",
+                letsGo: "开始吧！",
+                skip: "跳过 →",
+                stepProgress: "步骤",
+                wellDone: "✓ 做得好！",
+                tutorialWelcomeTitle: "欢迎！",
+                tutorialWelcomeText: "欢迎来到教程！学习战斗基础。",
+                tutorialMoveTitle: "移动",
+                tutorialMoveText: "使用 <span class='key-hint'>←</span> 和 <span class='key-hint'>→</span> 移动。",
+                tutorialJumpTitle: "跳跃",
+                tutorialJumpText: "按 <span class='key-hint'>↑</span> 跳跃和闪避！",
+                tutorialPunchTitle: "拳击",
+                tutorialPunchText: "按 <span class='key-hint'>空格</span> 出拳！",
+                tutorialKickTitle: "踢腿",
+                tutorialKickText: "按 <span class='key-hint'>N</span> 强力踢击！",
+                tutorialBlockTitle: "防御",
+                tutorialBlockText: "按住 <span class='key-hint'>M</span> 防御！",
+                tutorialChargeTitle: "充能",
+                tutorialChargeText: "按住 <span class='key-hint'>B</span> 恢复体力！",
+                tutorialEndTitle: "恭喜！",
+                tutorialEndText: "你已掌握基础！返回菜单开始战斗！",
+                player: "玩家",
+                bot: "对手",
+                round: "回合",
+                go: "开始！",
+                criticalHit: "暴击！",
+                updateNotes: [
+                    "🎵 全新史诗级音乐！",
+                    "💀 死亡临近时压迫性音乐！",
+                    "👥 观众狂欢欢呼！",
+                    "🔊 震撼沉浸式音效",
+                    "🎭 超逼真体育场氛围！"
+                ]
+            }
+        };
+
+        function t(key) {
+            return TRANSLATIONS[currentLanguage][key] || TRANSLATIONS['en'][key] || key;
+        }
+
+        function applyTranslations() {
+            // Translate all elements with data-translate attribute
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                const translation = t(key);
+                if (translation) {
+                    el.textContent = translation;
+                }
+            });
+
+            // Update HTML direction for Arabic
+            document.documentElement.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
+        }
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('boxingGame_language', lang);
+            applyTranslations();
+
+            // Update dynamic content
+            if (typeof updateTutorialUI === 'function' && tutorialMode) {
+                updateTutorialUI();
+            }
+        }
+
+        // ============================================
+        // GAME CONFIGURATION
+        // ============================================
+        const CONFIG = {
+            PUNCH_DAMAGE: 5,
+            KICK_DAMAGE: 10,
+            PUNCH_STAMINA: 4,
+            KICK_STAMINA: 7,
+            JUMP_STAMINA: 3,
+            PUNCH_COOLDOWN: 200, // ms between punches
+            BLOCK_DAMAGE_REDUCTION: 0.25,
+            CHARGING_DAMAGE_MULTIPLIER: 2,
+            PASSIVE_REGEN: 5,  // per second
+            TURBO_REGEN: 15,   // per second
+            REGEN_DELAY: 1000, // ms before passive regen starts
+            KICK_WINDUP: 500, // ms (0.5 sec)
+            KNOCKBACK: 30,
+            KICK_KNOCKBACK: 50, // More knockback for kicks
+            PUNCH_RANGE: 60,
+            KICK_RANGE: 90,
+            MOVE_SPEED: 5,
+            JUMP_FORCE: 18,
+            GRAVITY: 0.8,
+            // Critical hits
+            PUNCH_CRIT_CHANCE: 0.05, // 5%
+            KICK_CRIT_CHANCE: 0.10,  // 10%
+            CRIT_MULTIPLIER: 2,
+            BOT_DIFFICULTY: {
+                easy: { reactionTime: 500, attackChance: 0.05, blockChance: 0.25, smartness: 0.4, jumpChance: 0.02 },
+                medium: { reactionTime: 350, attackChance: 0.08, blockChance: 0.4, smartness: 0.6, jumpChance: 0.04 },
+                hard: { reactionTime: 200, attackChance: 0.12, blockChance: 0.55, smartness: 0.85, jumpChance: 0.06 }
+            }
+        };
+
+        // Game version for update notes
+        const GAME_VERSION = "3.2.0";
+
+        // ============================================
+        // AUDIO SYSTEM
+        // ============================================
+        let audioContext = null;
+        let musicGain = null;
+        let sfxGain = null;
+        let currentMusic = null;
+        let crowdExcitement = 0; // 0-1, increases when someone is close to winning
+
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            // Master gains
+            musicGain = audioContext.createGain();
+            musicGain.gain.value = 0.3;
+            musicGain.connect(audioContext.destination);
+
+            sfxGain = audioContext.createGain();
+            sfxGain.gain.value = 0.5;
+            sfxGain.connect(audioContext.destination);
+        }
+
+        function resumeAudio() {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
+        // Play a note
+        function playNote(freq, duration, type = 'sine', gainNode = sfxGain, volume = 0.3) {
+            if (!audioContext) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(volume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(gainNode);
+            osc.start();
+            osc.stop(audioContext.currentTime + duration);
+        }
+
+        // Crowd "OOOOH!" sound for critical hits
+        function playCrowdOooh() {
+            if (!audioContext) return;
+            resumeAudio();
+            // Multiple voices saying "ooooh"
+            const baseFreqs = [150, 180, 200, 220, 170];
+            baseFreqs.forEach((freq, i) => {
+                setTimeout(() => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq + Math.random() * 30, audioContext.currentTime);
+                    osc.frequency.linearRampToValueAtTime(freq - 50, audioContext.currentTime + 0.8);
+                    gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.2);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+                    osc.connect(gain);
+                    gain.connect(sfxGain);
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.8);
+                }, i * 30);
+            });
+        }
+
+        // INTENSE Crowd cheering sound
+        function playCrowdCheer(intensity = 1) {
+            if (!audioContext) return;
+            resumeAudio();
+
+            // Multiple layers of crowd noise for realism
+            for (let layer = 0; layer < 3; layer++) {
+                setTimeout(() => {
+                    if (!audioContext) return;
+
+                    // Crowd roar noise
+                    const duration = 0.4 + intensity * 0.3;
+                    const bufferSize = audioContext.sampleRate * duration;
+                    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        // Modulated noise for more organic sound
+                        const envelope = Math.sin(i / bufferSize * Math.PI);
+                        data[i] = (Math.random() * 2 - 1) * envelope * 0.6;
+                    }
+                    const noise = audioContext.createBufferSource();
+                    noise.buffer = buffer;
+
+                    const filter = audioContext.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = 800 + layer * 400 + intensity * 300;
+                    filter.Q.value = 0.3;
+
+                    const gain = audioContext.createGain();
+                    gain.gain.setValueAtTime(0, audioContext.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.15 * intensity, audioContext.currentTime + 0.05);
+                    gain.gain.setValueAtTime(0.15 * intensity, audioContext.currentTime + duration * 0.7);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(sfxGain);
+                    noise.start();
+                }, layer * 50);
+            }
+
+            // Add some "voice" tones for realism
+            const voiceFreqs = [200, 250, 300, 350, 400];
+            voiceFreqs.forEach((freq, i) => {
+                setTimeout(() => {
+                    if (audioContext) {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq + Math.random() * 50, audioContext.currentTime);
+                        osc.frequency.linearRampToValueAtTime(freq * 0.8, audioContext.currentTime + 0.3);
+                        gain.gain.setValueAtTime(0.05 * intensity, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        osc.connect(gain);
+                        gain.connect(sfxGain);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.3);
+                    }
+                }, i * 30 + Math.random() * 50);
+            });
+        }
+
+        // MASSIVE crowd explosion of joy - for when victory is near!
+        function playCrowdExplosion() {
+            if (!audioContext) return;
+            resumeAudio();
+
+            // Giant crowd roar
+            const bufferSize = audioContext.sampleRate * 1.5;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                const envelope = Math.pow(Math.sin(i / bufferSize * Math.PI), 0.5);
+                data[i] = (Math.random() * 2 - 1) * envelope * 0.8;
+            }
+            const noise = audioContext.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 1000;
+            filter.Q.value = 0.5;
+
+            const gain = audioContext.createGain();
+            gain.gain.setValueAtTime(0, audioContext.currentTime);
+            gain.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, audioContext.currentTime + 1);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(sfxGain);
+            noise.start();
+
+            // Triumphant horn-like tones
+            const hornNotes = [262, 330, 392, 523];
+            hornNotes.forEach((note, i) => {
+                setTimeout(() => {
+                    if (audioContext) {
+                        playNote(note, 0.8, 'sawtooth', sfxGain, 0.1);
+                        playNote(note * 2, 0.6, 'sine', sfxGain, 0.05);
+                    }
+                }, i * 100);
+            });
+        }
+
+        // Background music patterns
+        let musicInterval = null;
+        let musicState = 'none'; // 'normal', 'tense', 'victory'
+
+        function startMusic(state) {
+            if (musicState === state) return;
+            musicState = state;
+            stopMusic();
+
+            if (!audioContext) return;
+            resumeAudio();
+
+            if (state === 'normal') {
+                // EPIC BOXING MUSIC - Powerful and energetic!
+                let beat = 0;
+                let measure = 0;
+                musicInterval = setInterval(() => {
+                    if (!audioContext) return;
+
+                    // Powerful kick drum pattern
+                    const kickPattern = [1, 0, 0.7, 0, 1, 0, 0.8, 0];
+                    const kickVol = kickPattern[beat % 8] * 0.25;
+                    if (kickVol > 0) {
+                        // Deep kick
+                        playNote(55, 0.15, 'sine', musicGain, kickVol);
+                        playNote(110, 0.08, 'square', musicGain, kickVol * 0.4);
+                    }
+
+                    // Snare on 2 and 4
+                    if (beat % 4 === 2) {
+                        // Snare noise
+                        const bufferSize = audioContext.sampleRate * 0.1;
+                        const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) {
+                            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+                        }
+                        const noise = audioContext.createBufferSource();
+                        noise.buffer = buffer;
+                        const filter = audioContext.createBiquadFilter();
+                        filter.type = 'highpass';
+                        filter.frequency.value = 1000;
+                        const gain = audioContext.createGain();
+                        gain.gain.value = 0.15;
+                        noise.connect(filter);
+                        filter.connect(gain);
+                        gain.connect(musicGain);
+                        noise.start();
+                    }
+
+                    // Hi-hat pattern
+                    if (beat % 2 === 0) {
+                        playNote(8000, 0.03, 'square', musicGain, 0.05);
+                    }
+
+                    // Powerful bass line
+                    const bassNotes = [65, 65, 82, 65, 73, 65, 82, 87];
+                    playNote(bassNotes[beat % 8], 0.12, 'sawtooth', musicGain, 0.12);
+
+                    // Epic melody every 2 beats
+                    if (beat % 2 === 0) {
+                        const melodies = [
+                            [196, 220, 262, 294, 330, 294, 262, 220],
+                            [165, 196, 220, 262, 294, 262, 220, 196]
+                        ];
+                        const melody = melodies[measure % 2];
+                        playNote(melody[Math.floor(beat / 2) % 8], 0.15, 'square', musicGain, 0.08);
+                        playNote(melody[Math.floor(beat / 2) % 8] * 2, 0.1, 'sine', musicGain, 0.04);
+                    }
+
+                    // Power chord hits every 8 beats
+                    if (beat % 8 === 0) {
+                        playNote(130, 0.3, 'sawtooth', musicGain, 0.1);
+                        playNote(164, 0.3, 'sawtooth', musicGain, 0.08);
+                        playNote(196, 0.3, 'sawtooth', musicGain, 0.08);
+                        measure++;
+                    }
+
+                    beat++;
+                }, 120); // Fast tempo!
+
+            } else if (state === 'tense') {
+                // ULTRA INTENSE FINISHING MUSIC - Someone is about to die!
+                let beat = 0;
+                let intensity = 0;
+
+                // Start crowd roaring
+                startCrowdRoar();
+
+                musicInterval = setInterval(() => {
+                    if (!audioContext) return;
+                    intensity = Math.min(1, intensity + 0.02);
+
+                    // POUNDING heartbeat bass - gets faster
+                    const heartbeatVol = 0.3 + intensity * 0.2;
+                    playNote(40, 0.2, 'sine', musicGain, heartbeatVol);
+                    playNote(80, 0.1, 'sine', musicGain, heartbeatVol * 0.5);
+
+                    // Rapid aggressive drums
+                    if (beat % 2 === 0) {
+                        playNote(60, 0.08, 'square', musicGain, 0.25);
+                        // Snare roll effect
+                        for (let i = 0; i < 3; i++) {
+                            setTimeout(() => {
+                                if (audioContext) {
+                                    playNote(200 + Math.random() * 100, 0.03, 'square', musicGain, 0.1);
+                                }
+                            }, i * 30);
+                        }
+                    }
+
+                    // Oppressive dissonant chords
+                    const chordBase = 110 + Math.sin(beat * 0.5) * 20;
+                    playNote(chordBase, 0.15, 'sawtooth', musicGain, 0.1 + intensity * 0.1);
+                    playNote(chordBase * 1.19, 0.15, 'sawtooth', musicGain, 0.08); // Minor second - tension!
+                    playNote(chordBase * 1.41, 0.15, 'sawtooth', musicGain, 0.08); // Tritone - evil!
+
+                    // Rising siren of doom
+                    const sirenFreq = 300 + beat * 10 + Math.sin(beat * 2) * 100;
+                    playNote(Math.min(sirenFreq, 1500), 0.1, 'sine', musicGain, 0.06 * intensity);
+
+                    // Cymbal crashes
+                    if (beat % 8 === 0) {
+                        const bufferSize = audioContext.sampleRate * 0.5;
+                        const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) {
+                            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                        }
+                        const noise = audioContext.createBufferSource();
+                        noise.buffer = buffer;
+                        const gain = audioContext.createGain();
+                        gain.gain.value = 0.2;
+                        noise.connect(gain);
+                        gain.connect(musicGain);
+                        noise.start();
+                    }
+
+                    // Crowd excitement bursts
+                    if (beat % 4 === 0 && Math.random() < 0.5) {
+                        playCrowdCheer(0.8 + intensity * 0.5);
+                    }
+
+                    beat++;
+                }, 80); // Very fast - oppressive!
+            }
+        }
+
+        // Continuous crowd roar for tense moments
+        let crowdRoarInterval = null;
+        function startCrowdRoar() {
+            stopCrowdRoar();
+            if (!audioContext) return;
+
+            crowdRoarInterval = setInterval(() => {
+                if (!audioContext) return;
+                // Ambient crowd noise
+                const bufferSize = audioContext.sampleRate * 0.3;
+                const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * 0.3;
+                }
+                const noise = audioContext.createBufferSource();
+                noise.buffer = buffer;
+                const filter = audioContext.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 800;
+                filter.Q.value = 0.8;
+                const gain = audioContext.createGain();
+                gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gain.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(sfxGain);
+                noise.start();
+            }, 200);
+        }
+
+        function stopCrowdRoar() {
+            if (crowdRoarInterval) {
+                clearInterval(crowdRoarInterval);
+                crowdRoarInterval = null;
+            }
+        }
+
+        function stopMusic() {
+            if (musicInterval) {
+                clearInterval(musicInterval);
+                musicInterval = null;
+            }
+            stopCrowdRoar();
+        }
+
+        // ============================================
+        // GAME STATE
+        // ============================================
+        let canvas, ctx;
+        let gameState = 'menu'; // menu, countdown, playing, roundEnd, gameEnd
+        let difficulty = 'medium';
+        let currentRound = 1;
+        let roundResults = [null, null, null]; // null, 'player', 'bot'
+        let countdownValue = 0;
+        let countdownText = '';
+        let lastTime = 0;
+        let showUpdateModal = true; // Show update notes on first load
+
+        // Critical hit display
+        let criticalHits = []; // {x, y, timer}
+
+        // Spectators
+        let spectators = [];
+
+        // ============================================
+        // TUTORIAL SYSTEM
+        // ============================================
+        let tutorialMode = false;
+        let tutorialStep = 0;
+        let tutorialActionDone = false;
+
+        const TUTORIAL_STEPS = [
+            {
+                titleKey: "tutorialWelcomeTitle",
+                textKey: "tutorialWelcomeText",
+                action: null,
+                autoAdvance: true
+            },
+            {
+                titleKey: "tutorialMoveTitle",
+                textKey: "tutorialMoveText",
+                action: 'move',
+                autoAdvance: false
+            },
+            {
+                titleKey: "tutorialJumpTitle",
+                textKey: "tutorialJumpText",
+                action: 'jump',
+                autoAdvance: false
+            },
+            {
+                titleKey: "tutorialPunchTitle",
+                textKey: "tutorialPunchText",
+                action: 'punch',
+                autoAdvance: false
+            },
+            {
+                titleKey: "tutorialKickTitle",
+                textKey: "tutorialKickText",
+                action: 'kick',
+                autoAdvance: false
+            },
+            {
+                titleKey: "tutorialBlockTitle",
+                textKey: "tutorialBlockText",
+                action: 'block',
+                autoAdvance: false
+            },
+            {
+                titleKey: "tutorialChargeTitle",
+                textKey: "tutorialChargeText",
+                action: 'charge',
+                autoAdvance: false
+            },
+            {
+                titleKey: "tutorialEndTitle",
+                textKey: "tutorialEndText",
+                action: null,
+                autoAdvance: true,
+                isFinal: true
+            }
+        ];
+
+        function startTutorial() {
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('tutorialUI').classList.remove('hidden');
+
+            tutorialMode = true;
+            tutorialStep = 0;
+            tutorialActionDone = false;
+            countdownText = ''; // No countdown during tutorial
+
+            // Reset players for tutorial
+            player.reset(150);
+            bot.reset(canvas.width - 210);
+            bot.health = 100;
+            player.stamina = 100;
+
+            // Make sure spectators exist
+            if (spectators.length === 0) {
+                createSpectators();
+            }
+
+            gameState = 'playing';
+            updateTutorialUI();
+        }
+
+        function updateTutorialUI() {
+            const step = TUTORIAL_STEPS[tutorialStep];
+            document.getElementById('tutorialTitle').textContent = t(step.titleKey);
+            document.getElementById('tutorialText').innerHTML = t(step.textKey);
+            document.getElementById('tutorialProgress').textContent = `${t('stepProgress')} ${tutorialStep + 1}/${TUTORIAL_STEPS.length}`;
+
+            // Auto-advance for intro/outro steps after a delay
+            if (step.autoAdvance && !step.isFinal) {
+                setTimeout(() => {
+                    if (tutorialMode && tutorialStep === 0) {
+                        nextTutorialStep();
+                    }
+                }, 3000);
+            }
+        }
+
+        function nextTutorialStep() {
+            tutorialStep++;
+            tutorialActionDone = false;
+
+            if (tutorialStep >= TUTORIAL_STEPS.length) {
+                endTutorial();
+                return;
+            }
+
+            // Reset bot health for each step
+            bot.health = 100;
+
+            updateTutorialUI();
+        }
+
+        function skipTutorialStep() {
+            const step = TUTORIAL_STEPS[tutorialStep];
+            if (step.isFinal) {
+                endTutorial();
+            } else {
+                nextTutorialStep();
+            }
+        }
+
+        function endTutorial() {
+            tutorialMode = false;
+            tutorialStep = 0;
+            document.getElementById('tutorialUI').classList.add('hidden');
+            document.getElementById('menuScreen').classList.remove('hidden');
+            gameState = 'menu';
+        }
+
+        function checkTutorialAction(actionType) {
+            if (!tutorialMode || tutorialActionDone) return;
+
+            const step = TUTORIAL_STEPS[tutorialStep];
+            if (step.action === actionType) {
+                tutorialActionDone = true;
+
+                // Visual feedback - flash the instruction box green
+                const instructionBox = document.querySelector('.tutorial-instruction');
+                instructionBox.style.borderColor = '#22c55e';
+                instructionBox.style.boxShadow = '0 0 30px rgba(34, 197, 94, 0.6)';
+                document.getElementById('tutorialTitle').textContent = t('wellDone');
+
+                // Play success sound
+                if (audioContext) {
+                    playNote(523, 0.1, 'sine', sfxGain, 0.3);
+                    setTimeout(() => playNote(659, 0.1, 'sine', sfxGain, 0.3), 100);
+                    setTimeout(() => playNote(784, 0.15, 'sine', sfxGain, 0.3), 200);
+                }
+
+                // Small delay before advancing
+                setTimeout(() => {
+                    if (tutorialMode) {
+                        // Reset style
+                        instructionBox.style.borderColor = '#3b82f6';
+                        instructionBox.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.4)';
+                        nextTutorialStep();
+                    }
+                }, 1000);
+            }
+        }
+
+        // ============================================
+        // BOXER CLASS
+        // ============================================
+        class Boxer {
+            constructor(isPlayer, x) {
+                this.isPlayer = isPlayer;
+                this.x = x;
+                this.y = 0; // Will be set based on canvas height
+                this.width = 60;
+                this.height = 120;
+                this.health = 100;
+                this.stamina = 100;
+                this.facingRight = isPlayer;
+
+                // States
+                this.isBlocking = false;
+                this.isCharging = false;
+                this.isPunching = false;
+                this.isKicking = false;
+                this.kickWindup = 0;
+                this.punchAnimation = 0;
+                this.kickAnimation = 0;
+                this.hitAnimation = 0;
+
+                // Regen
+                this.lastActionTime = 0;
+                this.isRegenerating = false;
+
+                // Movement
+                this.velocityX = 0;
+                this.velocityY = 0;
+                this.isOnGround = true;
+                this.groundY = 0; // Will be set based on canvas height
+
+                // Punch cooldown
+                this.lastPunchTime = 0;
+
+                // Bot AI
+                this.botDecisionTimer = 0;
+                this.botAction = null;
+            }
+
+            reset(x) {
+                this.x = x;
+                this.y = 0;
+                this.health = 100;
+                this.stamina = 100;
+                this.isBlocking = false;
+                this.isCharging = false;
+                this.isPunching = false;
+                this.isKicking = false;
+                this.kickWindup = 0;
+                this.punchAnimation = 0;
+                this.kickAnimation = 0;
+                this.hitAnimation = 0;
+                this.lastActionTime = 0;
+                this.lastPunchTime = 0;
+                this.isRegenerating = false;
+                this.velocityX = 0;
+                this.velocityY = 0;
+                this.isOnGround = true;
+            }
+
+            update(deltaTime, opponent) {
+                const now = Date.now();
+
+                // Update facing direction
+                this.facingRight = this.x < opponent.x;
+
+                // Apply velocity
+                this.x += this.velocityX;
+
+                // Gravity and jumping
+                this.groundY = canvas.height - 150 - this.height;
+
+                if (!this.isOnGround) {
+                    this.velocityY += CONFIG.GRAVITY;
+                    this.y += this.velocityY;
+
+                    // Check if landed
+                    if (this.y >= 0) {
+                        this.y = 0;
+                        this.velocityY = 0;
+                        this.isOnGround = true;
+                    }
+                } else if (isFlying) {
+                    // Flying mode - no gravity, free vertical movement
+                    this.isOnGround = false;
+                }
+
+                // Keep in bounds
+                const margin = 50;
+                this.x = Math.max(margin, Math.min(canvas.width - margin - this.width, this.x));
+
+                // Update animations
+                if (this.punchAnimation > 0) this.punchAnimation -= deltaTime * 5;
+                if (this.kickAnimation > 0) this.kickAnimation -= deltaTime * 5;
+                if (this.hitAnimation > 0) this.hitAnimation -= deltaTime * 3;
+
+                // Kick windup
+                if (this.kickWindup > 0) {
+                    this.kickWindup -= deltaTime * 1000;
+                    if (this.kickWindup <= 0) {
+                        this.executeKick(opponent);
+                    }
+                }
+
+                // Stamina regeneration
+                const timeSinceAction = now - this.lastActionTime;
+
+                if (this.isCharging) {
+                    // Turbo charging
+                    this.stamina = Math.min(100, this.stamina + CONFIG.TURBO_REGEN * deltaTime);
+                    this.isRegenerating = true;
+                } else if (this.isBlocking) {
+                    // Blocking does NOT allow regen - you have to choose!
+                    this.isRegenerating = false;
+                } else if (timeSinceAction > CONFIG.REGEN_DELAY && !this.isPunching && !this.isKicking) {
+                    // Passive regen after delay (moving doesn't block regen)
+                    this.stamina = Math.min(100, this.stamina + CONFIG.PASSIVE_REGEN * deltaTime);
+                    this.isRegenerating = true;
+                } else {
+                    this.isRegenerating = false;
+                }
+            }
+
+            punch(opponent) {
+                const now = Date.now();
+                // Check cooldown, stamina, and if already punching
+                if (now - this.lastPunchTime < CONFIG.PUNCH_COOLDOWN) return;
+                if (this.stamina < CONFIG.PUNCH_STAMINA || this.isPunching) return;
+
+                this.stamina -= CONFIG.PUNCH_STAMINA;
+                this.isPunching = true;
+                this.punchAnimation = 1;
+                this.lastActionTime = now;
+                this.lastPunchTime = now;
+
+                // Check hit
+                const distance = Math.abs(this.x + this.width / 2 - (opponent.x + opponent.width / 2));
+                if (distance < CONFIG.PUNCH_RANGE + this.width / 2) {
+                    this.dealDamage(opponent, CONFIG.PUNCH_DAMAGE, 'punch');
+                }
+
+                setTimeout(() => { this.isPunching = false; }, 150);
+            }
+
+            jump() {
+                if (this.isOnGround && this.stamina >= CONFIG.JUMP_STAMINA) {
+                    this.stamina -= CONFIG.JUMP_STAMINA;
+                    this.velocityY = -CONFIG.JUMP_FORCE;
+                    this.isOnGround = false;
+                    this.lastActionTime = Date.now();
+                }
+            }
+
+            startKick() {
+                if (this.stamina < CONFIG.KICK_STAMINA || this.isKicking) return;
+
+                this.stamina -= CONFIG.KICK_STAMINA;
+                this.isKicking = true;
+                this.kickWindup = CONFIG.KICK_WINDUP;
+                this.lastActionTime = Date.now();
+            }
+
+            executeKick(opponent) {
+                this.kickAnimation = 1;
+
+                // Check hit
+                const distance = Math.abs(this.x + this.width / 2 - (opponent.x + opponent.width / 2));
+                if (distance < CONFIG.KICK_RANGE + this.width / 2) {
+                    this.dealDamage(opponent, CONFIG.KICK_DAMAGE, 'kick');
+                }
+
+                setTimeout(() => { this.isKicking = false; }, 300);
+            }
+
+            dealDamage(opponent, baseDamage, attackType = 'punch') {
+                let damage = baseDamage;
+                let isCritical = false;
+
+                // Check for critical hit
+                const critChance = attackType === 'kick' ? CONFIG.KICK_CRIT_CHANCE : CONFIG.PUNCH_CRIT_CHANCE;
+                if (Math.random() < critChance) {
+                    damage *= CONFIG.CRIT_MULTIPLIER;
+                    isCritical = true;
+                    // Add critical hit display
+                    const groundY = canvas.height - 150;
+                    criticalHits.push({
+                        x: opponent.x + opponent.width / 2,
+                        y: groundY - opponent.height - 30 + opponent.y,
+                        timer: 1.5
+                    });
+                    // Crowd goes "OOOOH!" on critical hits
+                    playCrowdOooh();
+                }
+
+                // Check if opponent is charging (double damage)
+                if (opponent.isCharging) {
+                    damage *= CONFIG.CHARGING_DAMAGE_MULTIPLIER;
+                }
+
+                // Check if opponent is blocking
+                if (opponent.isBlocking) {
+                    damage *= CONFIG.BLOCK_DAMAGE_REDUCTION;
+                    opponent.isRegenerating = false; // Stop regen when hit while blocking
+                }
+
+                opponent.health -= damage;
+                opponent.health = Math.max(0, opponent.health);
+                opponent.hitAnimation = 1;
+
+                // Knockback (more for kicks)
+                const direction = opponent.x > this.x ? 1 : -1;
+                const knockback = attackType === 'kick' ? CONFIG.KICK_KNOCKBACK : CONFIG.KNOCKBACK;
+                opponent.x += knockback * direction;
+            }
+
+            draw(ctx) {
+                const groundY = canvas.height - 150;
+                const drawX = this.x;
+                const drawY = groundY - this.height + this.y; // this.y is negative when jumping
+
+                // Hit flash
+                if (this.hitAnimation > 0.5) {
+                    ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.05) * 0.3;
+                }
+
+                // Body color
+                const bodyColor = '#ffdbac';
+                const shortsColor = this.isPlayer ? '#dc2626' : '#2563eb';
+                const gloveColor = this.isPlayer ? '#b91c1c' : '#1d4ed8';
+
+                // Draw legs
+                ctx.fillStyle = bodyColor;
+                const legOffset = Math.sin(Date.now() * 0.01) * 2;
+                const isKicking = this.kickAnimation > 0 || this.kickWindup > 0;
+                const kickProgress = isKicking ? (this.kickAnimation > 0 ? this.kickAnimation : (1 - this.kickWindup / CONFIG.KICK_WINDUP) * 0.5) : 0;
+                const kickDir = this.facingRight ? 1 : -1;
+
+                // Back leg (always drawn normally)
+                const backLegX = this.facingRight ? drawX + 10 : drawX + 35;
+                ctx.fillRect(backLegX, drawY + 70, 15, 50 + legOffset);
+
+                // Front leg (animated for kick)
+                const frontLegX = this.facingRight ? drawX + 35 : drawX + 10;
+                if (isKicking) {
+                    // Animate the front leg for kick
+                    ctx.save();
+                    ctx.translate(frontLegX + 7, drawY + 70);
+                    ctx.rotate(kickDir * kickProgress * Math.PI / 2.5);
+                    ctx.fillRect(-7, 0, 15, 50);
+                    ctx.restore();
+                } else {
+                    // Normal front leg
+                    ctx.fillRect(frontLegX, drawY + 70, 15, 50 - legOffset);
+                }
+
+                // Draw shorts
+                ctx.fillStyle = shortsColor;
+                ctx.fillRect(drawX + 5, drawY + 55, 50, 25);
+
+                // Draw body
+                ctx.fillStyle = bodyColor;
+                ctx.fillRect(drawX + 10, drawY + 20, 40, 40);
+
+                // Draw head
+                ctx.beginPath();
+                ctx.arc(drawX + 30, drawY + 10, 18, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw eyes
+                ctx.fillStyle = '#333';
+                const eyeOffsetX = this.facingRight ? 4 : -4;
+                ctx.beginPath();
+                ctx.arc(drawX + 25 + eyeOffsetX, drawY + 7, 3, 0, Math.PI * 2);
+                ctx.arc(drawX + 35 + eyeOffsetX, drawY + 7, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw arms and gloves - proper boxing guard stance
+                const bodyCenter = drawX + 30;
+                const shoulderY = drawY + 30;
+                const armLength = 25;
+                const forearmLength = 22;
+
+                // Direction multiplier: 1 if facing right, -1 if facing left
+                const dir = this.facingRight ? 1 : -1;
+
+                // Shoulder positions (adjusted based on direction)
+                const frontShoulderX = bodyCenter + dir * 15;
+                const backShoulderX = bodyCenter - dir * 15;
+
+                // Calculate arm positions based on state
+                let frontArmAngle, backArmAngle;
+                let frontForearmAngle, backForearmAngle;
+
+                if (this.isBlocking) {
+                    // Blocking pose - both arms up protecting face, oriented toward opponent
+                    frontArmAngle = dir * (-Math.PI / 2.5); // Arms angled toward opponent
+                    backArmAngle = dir * (-Math.PI / 2.5);
+                    frontForearmAngle = dir * (-Math.PI / 2); // Forearms up
+                    backForearmAngle = dir * (-Math.PI / 2);
+                } else if (this.punchAnimation > 0) {
+                    // Punching - front arm extends toward opponent
+                    const punchProgress = this.punchAnimation;
+                    // Front arm punches forward
+                    frontArmAngle = dir * (-Math.PI / 6 + punchProgress * Math.PI / 3);
+                    frontForearmAngle = dir * (punchProgress * Math.PI / 4);
+                    // Back arm stays in guard
+                    backArmAngle = dir * (-Math.PI / 3);
+                    backForearmAngle = dir * (-Math.PI / 2.5);
+                } else {
+                    // Boxing guard stance - arms up, fists near face, oriented toward opponent
+                    frontArmAngle = dir * (-Math.PI / 4); // Front arm more forward
+                    frontForearmAngle = dir * (-Math.PI / 2.2);
+                    backArmAngle = dir * (-Math.PI / 3); // Back arm closer to body
+                    backForearmAngle = dir * (-Math.PI / 2);
+                }
+
+                // Draw back arm first (behind body)
+                ctx.fillStyle = bodyColor;
+                ctx.save();
+                ctx.translate(backShoulderX, shoulderY);
+                ctx.rotate(backArmAngle);
+                ctx.fillRect(-6, 0, 12, armLength);
+                // Forearm
+                ctx.translate(0, armLength);
+                ctx.rotate(backForearmAngle);
+                ctx.fillRect(-5, 0, 10, forearmLength);
+                // Glove
+                ctx.fillStyle = gloveColor;
+                ctx.beginPath();
+                ctx.arc(0, forearmLength + 8, 11, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Draw front arm (in front)
+                ctx.fillStyle = bodyColor;
+                ctx.save();
+                ctx.translate(frontShoulderX, shoulderY);
+                ctx.rotate(frontArmAngle);
+                ctx.fillRect(-6, 0, 12, armLength);
+                // Forearm
+                ctx.translate(0, armLength);
+                ctx.rotate(frontForearmAngle);
+                ctx.fillRect(-5, 0, 10, forearmLength);
+                // Glove
+                ctx.fillStyle = gloveColor;
+                ctx.beginPath();
+                ctx.arc(0, forearmLength + 8, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Fire effect when charging
+                if (this.isCharging) {
+                    this.drawFire(ctx, drawX + 30, drawY - 15);
+                }
+
+                ctx.globalAlpha = 1;
+            }
+
+            drawFire(ctx, x, y) {
+                const time = Date.now() * 0.01;
+                for (let i = 0; i < 8; i++) {
+                    const flameX = x + Math.sin(time + i) * 10;
+                    const flameY = y - i * 4 - Math.random() * 5;
+                    const size = 12 - i * 1.2;
+
+                    ctx.fillStyle = i < 3 ? '#ff0' : (i < 5 ? '#f80' : '#f00');
+                    ctx.globalAlpha = 0.8 - i * 0.08;
+                    ctx.beginPath();
+                    ctx.arc(flameX, flameY, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // ============================================
+        // SPECTATOR CLASS
+        // ============================================
+        class Spectator {
+            constructor(x, row, isRed) {
+                this.x = x;
+                this.row = row; // 0 = front, 1 = middle, 2 = back
+                this.baseY = canvas.height - 280 - row * 45;
+                this.y = this.baseY;
+                this.isRed = isRed;
+                this.bounceOffset = Math.random() * Math.PI * 2;
+                this.bounceSpeed = 3 + Math.random() * 2;
+                this.scale = 1 - row * 0.15; // Smaller in back rows
+                this.excitement = 0; // 0-1, controlled by game state
+            }
+
+            update(deltaTime, playerHealth, botHealth) {
+                // Calculate excitement based on who's winning
+                let targetExcitement = 0;
+                if (this.isRed) {
+                    // Red spectators get excited when bot is losing
+                    targetExcitement = Math.max(0, (100 - botHealth) / 100);
+                    if (botHealth < 30) targetExcitement = 1;
+                } else {
+                    // Blue spectators get excited when player is losing
+                    targetExcitement = Math.max(0, (100 - playerHealth) / 100);
+                    if (playerHealth < 30) targetExcitement = 1;
+                }
+
+                // Smooth transition
+                this.excitement += (targetExcitement - this.excitement) * 0.05;
+
+                // Bounce amplitude increases with excitement
+                const bounceAmp = 5 + this.excitement * 15;
+                const speed = this.bounceSpeed + this.excitement * 3;
+                this.y = this.baseY + Math.sin(Date.now() * 0.005 * speed + this.bounceOffset) * bounceAmp;
+            }
+
+            draw(ctx) {
+                // Color gets brighter with excitement
+                const r = this.isRed ? Math.min(255, 220 + this.excitement * 35) : Math.min(255, 37 + this.excitement * 50);
+                const g = this.isRed ? Math.min(255, 38 + this.excitement * 50) : Math.min(255, 99 + this.excitement * 50);
+                const b = this.isRed ? Math.min(255, 38 + this.excitement * 50) : Math.min(255, 235 + this.excitement * 20);
+                const color = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+
+                const skinTones = ['#ffdbac', '#f1c27d', '#e0ac69', '#c68642', '#8d5524'];
+                const skinColor = skinTones[Math.floor(this.bounceOffset * 2) % skinTones.length];
+                const s = this.scale;
+                const armRaise = this.excitement * 10; // Arms go higher when excited
+
+                // Body (shirt)
+                ctx.fillStyle = color;
+                ctx.fillRect(this.x - 10 * s, this.y, 20 * s, 30 * s);
+
+                // Head
+                ctx.fillStyle = skinColor;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y - 8 * s, 10 * s, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Arms up (cheering) - raise higher when excited
+                ctx.fillStyle = skinColor;
+                ctx.fillRect(this.x - 18 * s, this.y - 15 * s - armRaise, 8 * s, 20 * s);
+                ctx.fillRect(this.x + 10 * s, this.y - 15 * s - armRaise, 8 * s, 20 * s);
+            }
+        }
+
+        // ============================================
+        // PLAYERS
+        // ============================================
+        let player, bot;
+
+        // ============================================
+        // INPUT HANDLING
+        // ============================================
+        const keys = {};
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+
+            if (gameState === 'playing') {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    player.punch(bot);
+                    checkTutorialAction('punch');
+                }
+                if (e.code === 'KeyN') {
+                    player.startKick();
+                    checkTutorialAction('kick');
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        // ============================================
+        // BOT AI
+        // ============================================
+        function updateBotAI(deltaTime) {
+            // Bot is immobile during tutorial
+            if (tutorialMode) {
+                bot.velocityX = 0;
+                bot.isBlocking = false;
+                bot.isCharging = false;
+                return;
+            }
+
+            const settings = CONFIG.BOT_DIFFICULTY[difficulty];
+
+            bot.botDecisionTimer -= deltaTime * 1000;
+
+            if (bot.botDecisionTimer <= 0) {
+                bot.botDecisionTimer = settings.reactionTime * (0.8 + Math.random() * 0.4);
+
+                const distance = Math.abs(bot.x - player.x);
+                const inPunchRange = distance < CONFIG.PUNCH_RANGE + bot.width;
+                const inKickRange = distance < CONFIG.KICK_RANGE + bot.width;
+
+                // Reset actions
+                bot.isBlocking = false;
+                bot.isCharging = false;
+                bot.velocityX = 0;
+
+                // Jump to dodge incoming attacks or approach
+                if (bot.isOnGround && Math.random() < settings.jumpChance) {
+                    // Jump more often when player is attacking
+                    if (player.isPunching || player.isKicking || player.kickWindup > 0) {
+                        bot.jump();
+                        return;
+                    }
+                    // Sometimes jump randomly during approach
+                    if (distance > CONFIG.PUNCH_RANGE && Math.random() < 0.5) {
+                        bot.jump();
+                    }
+                }
+
+                // Smart blocking when player is attacking
+                if (player.isPunching || player.isKicking || player.kickWindup > 0) {
+                    if (Math.random() < settings.blockChance) {
+                        bot.isBlocking = true;
+                        return;
+                    }
+                }
+
+                // Low stamina - recharge
+                if (bot.stamina < 25 && Math.random() < settings.smartness) {
+                    if (distance > CONFIG.KICK_RANGE + 50) {
+                        bot.isCharging = true;
+                    } else {
+                        // Back away and block
+                        bot.velocityX = player.x < bot.x ? CONFIG.MOVE_SPEED : -CONFIG.MOVE_SPEED;
+                        bot.isBlocking = true;
+                    }
+                    return;
+                }
+
+                // Attack if in range
+                if (inPunchRange && Math.random() < settings.attackChance * 2) {
+                    bot.punch(player);
+                } else if (inKickRange && !bot.isKicking && Math.random() < settings.attackChance * 1.5) {
+                    bot.startKick();
+                } else {
+                    // Move towards player
+                    const moveChance = 0.7 + settings.smartness * 0.25;
+                    if (Math.random() < moveChance) {
+                        if (distance > CONFIG.PUNCH_RANGE) {
+                            bot.velocityX = player.x < bot.x ? -CONFIG.MOVE_SPEED : CONFIG.MOVE_SPEED;
+                            // Sometimes jump while approaching
+                            if (bot.isOnGround && Math.random() < settings.jumpChance * 2) {
+                                bot.jump();
+                            }
+                        } else if (distance < CONFIG.PUNCH_RANGE * 0.5 && Math.random() < 0.3) {
+                            // Sometimes back away when too close
+                            bot.velocityX = player.x < bot.x ? CONFIG.MOVE_SPEED : -CONFIG.MOVE_SPEED;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ============================================
+        // DRAWING FUNCTIONS
+        // ============================================
+        function drawBackground() {
+            // Sky/Arena background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(0.5, '#16213e');
+            gradient.addColorStop(1, '#0f0f23');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Arena lights
+            for (let i = 0; i < 5; i++) {
+                const x = canvas.width * (0.1 + i * 0.2);
+                ctx.fillStyle = 'rgba(255, 255, 200, 0.1)';
+                ctx.beginPath();
+                ctx.arc(x, 50, 80, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#fff8dc';
+                ctx.beginPath();
+                ctx.arc(x, 50, 15, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw spectators
+            spectators.forEach(s => s.draw(ctx));
+
+            // Ring floor
+            ctx.fillStyle = '#8b7355';
+            ctx.fillRect(0, canvas.height - 150, canvas.width, 150);
+
+            // Ring mat
+            ctx.fillStyle = '#e8e8e8';
+            ctx.fillRect(50, canvas.height - 145, canvas.width - 100, 140);
+
+            // Ring lines
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, canvas.height - 145);
+            ctx.lineTo(canvas.width / 2, canvas.height - 5);
+            ctx.stroke();
+
+            // Corner posts
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(40, canvas.height - 200, 20, 200);
+            ctx.fillRect(canvas.width - 60, canvas.height - 200, 20, 200);
+
+            // Ropes (semi-transparent)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 4;
+            for (let i = 0; i < 3; i++) {
+                const y = canvas.height - 180 + i * 25;
+                ctx.beginPath();
+                ctx.moveTo(50, y);
+                ctx.lineTo(canvas.width - 50, y);
+                ctx.stroke();
+            }
+        }
+
+        function drawUI() {
+            const barWidth = 300;
+            const barHeight = 25;
+            const staminaHeight = 15;
+            const margin = 30;
+
+            // Player bars (left)
+            drawHealthBar(margin, margin, barWidth, barHeight, player.health, true);
+            drawStaminaBar(margin, margin + barHeight + 5, barWidth, staminaHeight, player.stamina, true);
+
+            // Bot bars (right)
+            drawHealthBar(canvas.width - margin - barWidth, margin, barWidth, barHeight, bot.health, false);
+            drawStaminaBar(canvas.width - margin - barWidth, margin + barHeight + 5, barWidth, staminaHeight, bot.stamina, false);
+
+            // Round indicators (center top)
+            const indicatorSize = 25;
+            const indicatorY = margin + 10;
+            const totalWidth = indicatorSize * 3 + 20;
+            const startX = (canvas.width - totalWidth) / 2;
+
+            for (let i = 0; i < 3; i++) {
+                const x = startX + i * (indicatorSize + 10);
+                ctx.beginPath();
+                ctx.arc(x + indicatorSize / 2, indicatorY + indicatorSize / 2, indicatorSize / 2, 0, Math.PI * 2);
+
+                if (roundResults[i] === 'player') {
+                    ctx.fillStyle = '#22c55e';
+                } else if (roundResults[i] === 'bot') {
+                    ctx.fillStyle = '#ef4444';
+                } else {
+                    ctx.fillStyle = '#4a4a4a';
+                }
+                ctx.fill();
+
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Labels
+            ctx.font = '24px "Bebas Neue", sans-serif';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'left';
+            ctx.fillText(t('player'), margin, margin + barHeight + staminaHeight + 30);
+            ctx.textAlign = 'right';
+            ctx.fillText(t('bot'), canvas.width - margin, margin + barHeight + staminaHeight + 30);
+        }
+
+        function drawHealthBar(x, y, width, height, value, isLeft) {
+            // Background
+            ctx.fillStyle = '#333';
+            ctx.fillRect(x, y, width, height);
+
+            // Health
+            const healthWidth = (value / 100) * width;
+            const gradient = ctx.createLinearGradient(x, y, x + width, y);
+            gradient.addColorStop(0, '#22c55e');
+            gradient.addColorStop(1, '#16a34a');
+            ctx.fillStyle = gradient;
+
+            if (isLeft) {
+                ctx.fillRect(x, y, healthWidth, height);
+            } else {
+                ctx.fillRect(x + width - healthWidth, y, healthWidth, height);
+            }
+
+            // Border
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, width, height);
+        }
+
+        function drawStaminaBar(x, y, width, height, value, isPlayer = true) {
+            // Background
+            ctx.fillStyle = '#333';
+            ctx.fillRect(x, y, width, height);
+
+            // Stamina
+            const staminaWidth = (value / 100) * width;
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(x, y, staminaWidth, height);
+
+            // Border
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, width, height);
+        }
+
+        function drawCountdown() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = '120px "Bebas Neue", sans-serif';
+            ctx.fillStyle = '#e94560';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(countdownText, canvas.width / 2, canvas.height / 2);
+        }
+
+        // ============================================
+        // GAME LOGIC
+        // ============================================
+        function startGame() {
+            document.getElementById('menuScreen').classList.add('hidden');
+            currentRound = 1;
+            roundResults = [null, null, null];
+            startRound();
+        }
+
+        function startRound() {
+            gameState = 'countdown';
+
+            // Reset players
+            player.reset(150);
+            bot.reset(canvas.width - 210);
+
+            // Recreate spectators
+            createSpectators();
+
+            // Countdown sequence
+            countdownText = `${t('round')} ${currentRound}`;
+            setTimeout(() => { countdownText = '3'; }, 1500);
+            setTimeout(() => { countdownText = '2'; }, 2500);
+            setTimeout(() => { countdownText = '1'; }, 3500);
+            setTimeout(() => {
+                countdownText = t('go');
+                gameState = 'playing';
+            }, 4500);
+            setTimeout(() => { countdownText = ''; }, 5000);
+        }
+
+        function checkRoundEnd() {
+            // No round end during tutorial
+            if (tutorialMode) {
+                // Keep bot alive for practice
+                if (bot.health <= 0) {
+                    bot.health = 100;
+                }
+                // Keep player healthy too
+                player.health = 100;
+                player.stamina = Math.max(player.stamina, 50); // Always have some stamina
+                return;
+            }
+
+            if (player.health <= 0 || bot.health <= 0) {
+                gameState = 'roundEnd';
+
+                const playerWon = bot.health <= 0;
+                roundResults[currentRound - 1] = playerWon ? 'player' : 'bot';
+
+                // Count wins
+                const playerWins = roundResults.filter(r => r === 'player').length;
+                const botWins = roundResults.filter(r => r === 'bot').length;
+
+                if (playerWins >= 2 || botWins >= 2) {
+                    // Game over
+                    setTimeout(() => {
+                        showResult(playerWins >= 2);
+                    }, 1500);
+                } else {
+                    // Next round
+                    currentRound++;
+                    setTimeout(() => {
+                        startRound();
+                    }, 2000);
+                }
+            }
+        }
+
+        function showResult(playerWon) {
+            gameState = 'gameEnd';
+            const resultScreen = document.getElementById('resultScreen');
+            const resultText = document.getElementById('resultText');
+
+            resultText.textContent = playerWon ? t('win') : t('lose');
+            resultText.className = 'result-text ' + (playerWon ? 'win' : 'lose');
+            resultScreen.classList.remove('hidden');
+        }
+
+        function returnToMenu() {
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('menuScreen').classList.remove('hidden');
+            gameState = 'menu';
+        }
+
+        // ============================================
+        // INPUT PROCESSING
+        // ============================================
+        function processInput() {
+            if (gameState !== 'playing') return;
+
+            // Movement (doesn't count as action - can regen while moving)
+            player.velocityX = 0;
+            if (keys['ArrowLeft']) {
+                player.velocityX = -CONFIG.MOVE_SPEED;
+                checkTutorialAction('move');
+            }
+            if (keys['ArrowRight']) {
+                player.velocityX = CONFIG.MOVE_SPEED;
+                checkTutorialAction('move');
+            }
+
+            // Jump
+            if (keys['ArrowUp']) {
+                player.jump();
+                checkTutorialAction('jump');
+            }
+
+            // Blocking
+            player.isBlocking = keys['KeyM'];
+            if (player.isBlocking) {
+                checkTutorialAction('block');
+            }
+
+            // Charging
+            player.isCharging = keys['KeyB'];
+            if (player.isCharging) {
+                player.lastActionTime = Date.now();
+                checkTutorialAction('charge');
+            }
+        }
+
+        // ============================================
+        // GAME LOOP
+        // ============================================
+        let lastCheerTime = 0;
+        let cheerCooldown = 2000; // ms between crowd cheers
+
+        function gameLoop(timestamp) {
+            const deltaTime = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Get player health values for spectators
+            const pHealth = player ? player.health : 100;
+            const bHealth = bot ? bot.health : 100;
+
+            // Update spectators with health info
+            spectators.forEach(s => s.update(deltaTime, pHealth, bHealth));
+
+            // Draw background
+            drawBackground();
+
+            if (gameState === 'playing' || gameState === 'countdown' || gameState === 'roundEnd') {
+                // Process input
+                processInput();
+
+                if (gameState === 'playing') {
+                    // Update players
+                    player.update(deltaTime, bot);
+                    bot.update(deltaTime, player);
+
+                    // Bot AI
+                    updateBotAI(deltaTime);
+
+                    // Check round end
+                    checkRoundEnd();
+
+                    // Music management based on game state
+                    // No music during tutorial
+                    if (!tutorialMode) {
+                        const lowestHealth = Math.min(player.health, bot.health);
+                        const isCritical = lowestHealth < 20; // Very close to death!
+                        const isTense = lowestHealth < 40; // Getting dangerous
+
+                        if (isCritical) {
+                            startMusic('tense');
+                            // Trigger crowd explosion when someone is about to die
+                            if (lowestHealth < 10 && Math.random() < 0.02) {
+                                playCrowdExplosion();
+                            }
+                        } else if (isTense) {
+                            startMusic('tense');
+                        } else {
+                            startMusic('normal');
+                        }
+                    } else if (tutorialMode) {
+                        stopMusic();
+                    }
+
+                    // Crowd cheering when someone is close to winning
+                    const now = Date.now();
+                    if (now - lastCheerTime > cheerCooldown) {
+                        if (player.health < 25 || bot.health < 25) {
+                            playCrowdCheer(1);
+                            lastCheerTime = now;
+                            cheerCooldown = 1500; // More frequent when close to end
+                        } else if (player.health < 50 || bot.health < 50) {
+                            if (Math.random() < 0.02) {
+                                playCrowdCheer(0.5);
+                                lastCheerTime = now;
+                            }
+                        }
+                    }
+                } else if (gameState === 'countdown' && !tutorialMode) {
+                    startMusic('normal');
+                }
+
+                // Draw players
+                player.draw(ctx);
+                bot.draw(ctx);
+
+                // Draw UI
+                drawUI();
+
+                // Draw and update critical hit texts
+                drawCriticalHits(deltaTime);
+
+                // Draw countdown
+                if (countdownText) {
+                    drawCountdown();
+                }
+            } else {
+                // Stop music when not playing
+                if (gameState === 'menu' || gameState === 'gameEnd') {
+                    stopMusic();
+                }
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function drawCriticalHits(deltaTime) {
+            ctx.font = 'bold 32px "Bebas Neue", sans-serif';
+            ctx.textAlign = 'center';
+
+            for (let i = criticalHits.length - 1; i >= 0; i--) {
+                const crit = criticalHits[i];
+                crit.timer -= deltaTime;
+                crit.y -= deltaTime * 50; // Float up
+
+                if (crit.timer <= 0) {
+                    criticalHits.splice(i, 1);
+                    continue;
+                }
+
+                // Fade out effect
+                const alpha = Math.min(1, crit.timer);
+
+                // Gold text with shadow
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = '#ffd700';
+                ctx.shadowColor = '#ff8c00';
+                ctx.shadowBlur = 15;
+                ctx.fillText(t('criticalHit'), crit.x, crit.y);
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        function populateUpdateNotes() {
+            const listEl = document.getElementById('updateList');
+            listEl.innerHTML = '';
+            const notes = TRANSLATIONS[currentLanguage].updateNotes;
+            notes.forEach(note => {
+                const li = document.createElement('li');
+                li.textContent = note;
+                listEl.appendChild(li);
+            });
+        }
+
+        function init() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+
+            // Language selection listeners
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const lang = btn.getAttribute('data-lang');
+                    setLanguage(lang);
+                    document.getElementById('languageScreen').classList.add('hidden');
+                    document.getElementById('menuScreen').classList.remove('hidden');
+
+                    // Re-populate update notes with new language
+                    populateUpdateNotes();
+
+                    // Show update modal if not seen
+                    const seenVersion = localStorage.getItem('boxingGame_seenVersion');
+                    if (seenVersion !== GAME_VERSION) {
+                        document.getElementById('updateModal').classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Always show language selection screen on game start
+            // Language screen is shown by default, menu is hidden
+
+            // Set canvas size
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                // Recreate spectators on resize
+                createSpectators();
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            // Create players
+            player = new Boxer(true, 150);
+            bot = new Boxer(false, canvas.width - 210);
+
+            // Menu buttons
+            document.querySelectorAll('.diff-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    difficulty = btn.dataset.difficulty;
+                });
+            });
+
+            document.getElementById('playBtn').addEventListener('click', () => {
+                // Initialize audio on first user interaction
+                if (!audioContext) {
+                    initAudio();
+                }
+                resumeAudio();
+                startGame();
+            });
+
+            document.getElementById('tutorialBtn').addEventListener('click', () => {
+                // Initialize audio on first user interaction
+                if (!audioContext) {
+                    initAudio();
+                }
+                resumeAudio();
+                startTutorial();
+            });
+
+            document.getElementById('tutorialSkipBtn').addEventListener('click', () => {
+                skipTutorialStep();
+            });
+
+            document.getElementById('restartBtn').addEventListener('click', () => {
+                resumeAudio();
+                returnToMenu();
+            });
+
+            // Show update modal
+            initUpdateModal();
+
+            // Also init audio on any click (for browsers that need it)
+            document.addEventListener('click', () => {
+                if (!audioContext) {
+                    initAudio();
+                }
+                resumeAudio();
+            }, { once: true });
+
+            // Start game loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        function initUpdateModal() {
+            const modal = document.getElementById('updateModal');
+            const versionEl = document.getElementById('updateVersion');
+            const listEl = document.getElementById('updateList');
+            const closeBtn = document.getElementById('closeUpdateBtn');
+
+            // Set version
+            versionEl.textContent = `Version ${GAME_VERSION}`;
+
+            // Populate update notes with translated content
+            populateUpdateNotes();
+
+            // Close button
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+
+            // Check if update was already seen (using localStorage)
+            const seenVersion = localStorage.getItem('boxingGame_seenVersion');
+            if (seenVersion === GAME_VERSION) {
+                modal.classList.add('hidden');
+            }
+
+            // Mark as seen when closed
+            closeBtn.addEventListener('click', () => {
+                localStorage.setItem('boxingGame_seenVersion', GAME_VERSION);
+            });
+        }
+
+        function createSpectators() {
+            spectators = [];
+            const rows = 3; // 3 étages de spectateurs
+
+            for (let row = 0; row < rows; row++) {
+                const count = Math.floor(canvas.width / (45 - row * 5)); // More spectators in back
+                const offset = row * 15; // Offset each row slightly
+
+                for (let i = 0; i < count; i++) {
+                    const x = 40 + offset + (canvas.width - 80 - offset * 2) * (i / count);
+                    const isRed = x < canvas.width / 2;
+                    spectators.push(new Spectator(x, row, isRed));
+                }
+            }
+        }
+
+        // Start when DOM is ready
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
