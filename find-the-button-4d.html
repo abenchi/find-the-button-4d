@@ -1,0 +1,2537 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find The Button 4D 🔴</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #0a0a0f;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* Menu Screen */
+        #menuScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 40%, #16213e 70%, #0f3460 100%);
+            z-index: 100;
+        }
+
+        #menuScreen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(233, 69, 96, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(79, 172, 254, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 60%);
+            animation: bgPulse 8s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .menu-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 4.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 50%, #feca57 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            margin-bottom: 0.5rem;
+            letter-spacing: 4px;
+            animation: titleGlow 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px rgba(233, 69, 96, 0.5));
+        }
+
+        @keyframes titleGlow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 30px rgba(233, 69, 96, 0.5));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 50px rgba(233, 69, 96, 0.8));
+            }
+        }
+
+        .subtitle {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.8rem;
+            color: #4facfe;
+            margin-bottom: 3rem;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .level-select-title {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 1.5rem;
+            letter-spacing: 3px;
+        }
+
+        .level-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .level-buttons::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .level-buttons::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .level-buttons::-webkit-scrollbar-thumb {
+            background: #4facfe;
+            border-radius: 4px;
+        }
+
+        .level-btn {
+            padding: 0.6rem 1rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 2px solid;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-width: 100px;
+        }
+
+        .level-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .level-btn:hover::before {
+            left: 0;
+        }
+
+        /* Très facile - Vert */
+        .level-btn.easy {
+            color: #4ade80;
+            border-color: #4ade80;
+        }
+
+        .level-btn.easy::before {
+            background: #4ade80;
+        }
+
+        .level-btn.easy:hover,
+        .level-btn.easy.selected {
+            color: #0a0a0f;
+            background: #4ade80;
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+        }
+
+        /* Facile - Vert clair */
+        .level-btn.easy2 {
+            color: #86efac;
+            border-color: #86efac;
+        }
+
+        .level-btn.easy2::before {
+            background: #86efac;
+        }
+
+        .level-btn.easy2:hover,
+        .level-btn.easy2.selected {
+            color: #0a0a0f;
+            background: #86efac;
+            box-shadow: 0 0 20px rgba(134, 239, 172, 0.5);
+        }
+
+        /* Moyen-facile - Cyan */
+        .level-btn.medium1 {
+            color: #22d3d9;
+            border-color: #22d3d9;
+        }
+
+        .level-btn.medium1::before {
+            background: #22d3d9;
+        }
+
+        .level-btn.medium1:hover,
+        .level-btn.medium1.selected {
+            color: #0a0a0f;
+            background: #22d3d9;
+            box-shadow: 0 0 20px rgba(34, 211, 217, 0.5);
+        }
+
+        /* Moyen - Bleu */
+        .level-btn.medium2 {
+            color: #60a5fa;
+            border-color: #60a5fa;
+        }
+
+        .level-btn.medium2::before {
+            background: #60a5fa;
+        }
+
+        .level-btn.medium2:hover,
+        .level-btn.medium2.selected {
+            color: #0a0a0f;
+            background: #60a5fa;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+        }
+
+        /* Moyen+ - Jaune */
+        .level-btn.medium3 {
+            color: #fbbf24;
+            border-color: #fbbf24;
+        }
+
+        .level-btn.medium3::before {
+            background: #fbbf24;
+        }
+
+        .level-btn.medium3:hover,
+        .level-btn.medium3.selected {
+            color: #0a0a0f;
+            background: #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+
+        /* Difficile - Orange */
+        .level-btn.hard1 {
+            color: #fb923c;
+            border-color: #fb923c;
+        }
+
+        .level-btn.hard1::before {
+            background: #fb923c;
+        }
+
+        .level-btn.hard1:hover,
+        .level-btn.hard1.selected {
+            color: #0a0a0f;
+            background: #fb923c;
+            box-shadow: 0 0 20px rgba(251, 146, 60, 0.5);
+        }
+
+        /* Difficile+ - Orange foncé */
+        .level-btn.hard2 {
+            color: #f97316;
+            border-color: #f97316;
+        }
+
+        .level-btn.hard2::before {
+            background: #f97316;
+        }
+
+        .level-btn.hard2:hover,
+        .level-btn.hard2.selected {
+            color: #0a0a0f;
+            background: #f97316;
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+
+        /* Très difficile - Rouge */
+        .level-btn.hard3 {
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .level-btn.hard3::before {
+            background: #ef4444;
+        }
+
+        .level-btn.hard3:hover,
+        .level-btn.hard3.selected {
+            color: #0a0a0f;
+            background: #ef4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+        }
+
+        /* Extrême - Rouge foncé */
+        .level-btn.extreme {
+            color: #dc2626;
+            border-color: #dc2626;
+        }
+
+        .level-btn.extreme::before {
+            background: #dc2626;
+        }
+
+        .level-btn.extreme:hover,
+        .level-btn.extreme.selected {
+            color: #0a0a0f;
+            background: #dc2626;
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+        }
+
+        /* Final - Violet/Or */
+        .level-btn.final {
+            color: #a855f7;
+            border-color: #a855f7;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(234, 179, 8, 0.1));
+        }
+
+        .level-btn.final::before {
+            background: linear-gradient(135deg, #a855f7, #eab308);
+        }
+
+        .level-btn.final:hover,
+        .level-btn.final.selected {
+            color: #0a0a0f;
+            background: linear-gradient(135deg, #a855f7, #eab308);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+        }
+
+        .play-btn {
+            padding: 1.2rem 4rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(233, 69, 96, 0.4);
+        }
+
+        .play-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(233, 69, 96, 0.6);
+        }
+
+        .play-btn:active {
+            transform: translateY(0);
+        }
+
+        .controls-info {
+            margin-top: 3rem;
+            font-family: 'Rajdhani', sans-serif;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+
+        .controls-info span {
+            color: #4facfe;
+            font-weight: 700;
+        }
+
+        /* Game UI */
+        #gameUI {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .ui-panel {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            padding: 15px 25px;
+            border-radius: 10px;
+        }
+
+        .level-display {
+            font-size: 1.5rem;
+            color: #4facfe;
+            letter-spacing: 2px;
+        }
+
+        .level-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+
+        .hint-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            color: #feca57;
+            letter-spacing: 1px;
+        }
+
+        #cameraBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            background: rgba(79, 172, 254, 0.2);
+            border: 2px solid #4facfe;
+            color: #4facfe;
+            cursor: pointer;
+            z-index: 50;
+            transition: all 0.3s ease;
+            display: none;
+            pointer-events: auto;
+        }
+
+        #cameraBtn:hover {
+            background: #4facfe;
+            color: #0a0a0f;
+        }
+
+        #menuBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            color: #ef4444;
+            cursor: pointer;
+            z-index: 50;
+            transition: all 0.3s ease;
+            display: none;
+            pointer-events: auto;
+        }
+
+        #menuBtn:hover {
+            background: #ef4444;
+            color: #0a0a0f;
+        }
+
+        /* Win Screen */
+        #winScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(10, 10, 15, 0.95);
+            z-index: 200;
+        }
+
+        .win-title {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            animation: winPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes winPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .win-subtitle {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        .win-buttons {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .win-btn {
+            padding: 1rem 2.5rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: 2px solid;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .win-btn.next {
+            color: #4ade80;
+            border-color: #4ade80;
+        }
+
+        .win-btn.next:hover {
+            background: #4ade80;
+            color: #0a0a0f;
+        }
+
+        .win-btn.menu {
+            color: #4facfe;
+            border-color: #4facfe;
+        }
+
+        .win-btn.menu:hover {
+            background: #4facfe;
+            color: #0a0a0f;
+        }
+
+        /* Crosshair */
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: none;
+            z-index: 40;
+            pointer-events: none;
+        }
+
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        #crosshair::before {
+            width: 2px;
+            height: 8px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #crosshair::after {
+            width: 8px;
+            height: 2px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #crosshair.active {
+            border-color: #e94560;
+        }
+
+        #crosshair.active::before,
+        #crosshair.active::after {
+            background: #e94560;
+        }
+
+        /* Button found indicator */
+        #buttonIndicator {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            background: rgba(233, 69, 96, 0.9);
+            color: white;
+            border-radius: 10px;
+            display: none;
+            z-index: 60;
+            animation: bounce 0.5s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        /* Timer */
+        #timer {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: #4facfe;
+            z-index: 50;
+            display: none;
+            text-shadow: 0 0 20px rgba(79, 172, 254, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="gameContainer"></div>
+
+    <!-- Menu Screen -->
+    <div id="menuScreen">
+        <div class="menu-content">
+            <h1 class="game-title">FIND THE BUTTON</h1>
+            <p class="subtitle">4D EDITION</p>
+
+            <p class="level-select-title">SÉLECTIONNE UN NIVEAU (20)</p>
+            <div class="level-buttons">
+                <button class="level-btn easy selected" data-level="1">
+                    <div>1</div><small style="opacity:0.7;font-size:0.6rem;">Jardin</small>
+                </button>
+                <button class="level-btn easy" data-level="2">
+                    <div>2</div><small style="opacity:0.7;font-size:0.6rem;">Forêt</small>
+                </button>
+                <button class="level-btn easy2" data-level="3">
+                    <div>3</div><small style="opacity:0.7;font-size:0.6rem;">Plage</small>
+                </button>
+                <button class="level-btn easy2" data-level="4">
+                    <div>4</div><small style="opacity:0.7;font-size:0.6rem;">Prairie</small>
+                </button>
+                <button class="level-btn medium1" data-level="5">
+                    <div>5</div><small style="opacity:0.7;font-size:0.6rem;">Village</small>
+                </button>
+                <button class="level-btn medium1" data-level="6">
+                    <div>6</div><small style="opacity:0.7;font-size:0.6rem;">Marais</small>
+                </button>
+                <button class="level-btn medium2" data-level="7">
+                    <div>7</div><small style="opacity:0.7;font-size:0.6rem;">Bambou</small>
+                </button>
+                <button class="level-btn medium2" data-level="8">
+                    <div>8</div><small style="opacity:0.7;font-size:0.6rem;">Canyon</small>
+                </button>
+                <button class="level-btn medium3" data-level="9">
+                    <div>9</div><small style="opacity:0.7;font-size:0.6rem;">Désert</small>
+                </button>
+                <button class="level-btn medium3" data-level="10">
+                    <div>10</div><small style="opacity:0.7;font-size:0.6rem;">Cimetière</small>
+                </button>
+                <button class="level-btn hard1" data-level="11">
+                    <div>11</div><small style="opacity:0.7;font-size:0.6rem;">Ruines</small>
+                </button>
+                <button class="level-btn hard1" data-level="12">
+                    <div>12</div><small style="opacity:0.7;font-size:0.6rem;">Grotte</small>
+                </button>
+                <button class="level-btn hard2" data-level="13">
+                    <div>13</div><small style="opacity:0.7;font-size:0.6rem;">Fantôme</small>
+                </button>
+                <button class="level-btn hard2" data-level="14">
+                    <div>14</div><small style="opacity:0.7;font-size:0.6rem;">Temple</small>
+                </button>
+                <button class="level-btn hard3" data-level="15">
+                    <div>15</div><small style="opacity:0.7;font-size:0.6rem;">Jungle</small>
+                </button>
+                <button class="level-btn hard3" data-level="16">
+                    <div>16</div><small style="opacity:0.7;font-size:0.6rem;">Neige</small>
+                </button>
+                <button class="level-btn extreme" data-level="17">
+                    <div>17</div><small style="opacity:0.7;font-size:0.6rem;">Volcan</small>
+                </button>
+                <button class="level-btn extreme" data-level="18">
+                    <div>18</div><small style="opacity:0.7;font-size:0.6rem;">Cristaux</small>
+                </button>
+                <button class="level-btn extreme" data-level="19">
+                    <div>19</div><small style="opacity:0.7;font-size:0.6rem;">Dimension</small>
+                </button>
+                <button class="level-btn final" data-level="20">
+                    <div>20</div><small style="opacity:0.7;font-size:0.6rem;">FINAL ⚡</small>
+                </button>
+            </div>
+
+            <button class="play-btn" id="playBtn">JOUER</button>
+
+            <div class="controls-info">
+                <span>↑↓←→</span> ou <span>WASD</span> Déplacer &nbsp;|&nbsp;
+                <span>ESPACE</span> Sauter &nbsp;|&nbsp;
+                <span>CLIC/ENTRÉE</span> Appuyer
+            </div>
+        </div>
+
+        <!-- Particles -->
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 2.5s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 4.5s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 1.5s;"></div>
+    </div>
+
+    <!-- Game UI -->
+    <div id="gameUI">
+        <div class="ui-panel">
+            <div class="level-display">NIVEAU <span id="currentLevel">1</span></div>
+            <div class="level-name" id="levelName">Forêt Paisible</div>
+        </div>
+        <div class="ui-panel">
+            <div class="hint-text" id="hintText">Trouve le bouton rouge caché !</div>
+        </div>
+    </div>
+
+    <div id="timer">00:00</div>
+    <div id="crosshair"></div>
+    <div id="buttonIndicator">🔴 CLIC GAUCHE ou ENTRÉE pour appuyer !</div>
+    <div id="altarIndicator"
+        style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:15px 30px;font-family:'Orbitron',sans-serif;font-size:1.2rem;background:rgba(156,39,176,0.9);color:white;border-radius:10px;display:none;z-index:60;animation:bounce 0.5s ease-in-out infinite;">
+        ✨ CLIC ou ENTRÉE pour activer l'autel !</div>
+    <button id="cameraBtn">📷 VUE 3ÈME PERSONNE</button>
+    <button id="menuBtn">MENU</button>
+
+    <!-- Win Screen -->
+    <div id="winScreen">
+        <h1 class="win-title">BRAVO !</h1>
+        <p class="win-subtitle">Tu as trouvé le bouton en <span id="winTime">00:00</span> !</p>
+        <div class="win-buttons">
+            <button class="win-btn next" id="nextLevelBtn">NIVEAU SUIVANT</button>
+            <button class="win-btn menu" id="backToMenuBtn">MENU</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Game State
+        let scene, camera, renderer, player, redButton;
+        let currentLevel = 1;
+        let selectedLevel = 1;
+        let isPlaying = false;
+        let cameraYaw = 0; // Angle horizontal libre (rotation souris)
+        let cameraPitch = 0.3; // Angle vertical
+        let cameraDistance = 10;
+        let cameraHeight = 6;
+        let isFirstPerson = false; // true = vue 1ère personne, false = vue 3ème personne
+        let isRightMouseDown = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        // Animation de marche
+        let leftLegPivot, rightLegPivot, leftArmPivot, rightArmPivot;
+        let walkAnimationTime = 0;
+        let isWalking = false;
+        let timerStart = 0;
+        let timerInterval = null;
+        let canPressButton = false;
+        let levelObjects = [];
+        let platforms = [];
+
+        // Player controls
+        const keys = {
+            ArrowUp: false,
+            ArrowDown: false,
+            ArrowLeft: false,
+            ArrowRight: false,
+            KeyW: false,
+            KeyA: false,
+            KeyS: false,
+            KeyD: false,
+            Space: false
+        };
+
+        // Player physics
+        let playerVelocity = { x: 0, y: 0, z: 0 };
+        const playerSpeed = 0.15;
+        const jumpForce = 0.3;
+        const gravity = 0.015;
+        let isGrounded = true;
+
+        // Variables pour le niveau 20 (interactions)
+        let interactableObjects = [];
+        let interactionsCompleted = 0;
+        let level20ButtonHidden = true;
+
+        // Level configurations - 20 niveaux
+        const levelConfigs = {
+            1: { name: "Jardin Fleuri", hint: "Un joli jardin... le bouton est près des fleurs", groundColor: 0x3d8b37, skyColor: 0x87ceeb, fogColor: 0x87ceeb, fogDensity: 0.015, buttonPos: { x: 15, y: 0.5, z: 10 } },
+            2: { name: "Forêt Paisible", hint: "Caché derrière un arbre...", groundColor: 0x2d5a27, skyColor: 0x87ceeb, fogColor: 0x87ceeb, fogDensity: 0.02, buttonPos: { x: 25, y: 0.5, z: -20 } },
+            3: { name: "Plage Tropicale", hint: "Sous un palmier peut-être ?", groundColor: 0xf4d03f, skyColor: 0x5dade2, fogColor: 0x5dade2, fogDensity: 0.012, buttonPos: { x: -20, y: 0.5, z: 25 } },
+            4: { name: "Prairie Verdoyante", hint: "Parmi les hautes herbes...", groundColor: 0x58d68d, skyColor: 0xaed6f1, fogColor: 0xaed6f1, fogDensity: 0.015, buttonPos: { x: 30, y: 0.5, z: -15 } },
+            5: { name: "Village Abandonné", hint: "Regarde sous les structures...", groundColor: 0x8b7355, skyColor: 0xdeb887, fogColor: 0xdeb887, fogDensity: 0.025, buttonPos: { x: -18, y: 0.5, z: 22 } },
+            6: { name: "Marais Brumeux", hint: "Dans la brume, près de l'eau...", groundColor: 0x4a5d23, skyColor: 0x7f8c8d, fogColor: 0x7f8c8d, fogDensity: 0.04, buttonPos: { x: 28, y: 0.5, z: 28 } },
+            7: { name: "Forêt de Bambou", hint: "Entre les bambous...", groundColor: 0x2e7d32, skyColor: 0xa5d6a7, fogColor: 0xa5d6a7, fogDensity: 0.025, buttonPos: { x: -25, y: 0.5, z: -30 } },
+            8: { name: "Canyon Rocheux", hint: "Entre les rochers il y a des secrets...", groundColor: 0xcd853f, skyColor: 0xffa07a, fogColor: 0xffa07a, fogDensity: 0.02, buttonPos: { x: 15, y: 0.5, z: 28 } },
+            9: { name: "Désert Aride", hint: "Derrière une dune ou un cactus...", groundColor: 0xe9c46a, skyColor: 0xf4d03f, fogColor: 0xf4d03f, fogDensity: 0.015, buttonPos: { x: -35, y: 0.5, z: 20 } },
+            10: { name: "Cimetière Lugubre", hint: "Parmi les tombes...", groundColor: 0x3d3d3d, skyColor: 0x2c3e50, fogColor: 0x2c3e50, fogDensity: 0.035, buttonPos: { x: 20, y: 0.5, z: -35 } },
+            11: { name: "Ruines Antiques", hint: "Les anciens piliers cachent des trésors...", groundColor: 0x4a4a4a, skyColor: 0x483d8b, fogColor: 0x483d8b, fogDensity: 0.03, buttonPos: { x: -25, y: 0.5, z: -25 } },
+            12: { name: "Grotte Souterraine", hint: "Dans l'obscurité des roches...", groundColor: 0x1a1a1a, skyColor: 0x0d0d0d, fogColor: 0x0d0d0d, fogDensity: 0.05, buttonPos: { x: 30, y: 0.5, z: 35 } },
+            13: { name: "Ville Fantôme", hint: "Dans une maison abandonnée...", groundColor: 0x5d5d5d, skyColor: 0x34495e, fogColor: 0x34495e, fogDensity: 0.03, buttonPos: { x: -30, y: 0.5, z: -20 } },
+            14: { name: "Temple Ancien", hint: "Au cœur du temple...", groundColor: 0x8d6e63, skyColor: 0x607d8b, fogColor: 0x607d8b, fogDensity: 0.025, buttonPos: { x: 35, y: 0.5, z: -35 } },
+            15: { name: "Jungle Dense", hint: "La végétation cache bien des choses...", groundColor: 0x1b5e20, skyColor: 0x4caf50, fogColor: 0x4caf50, fogDensity: 0.04, buttonPos: { x: -38, y: 0.5, z: 38 } },
+            16: { name: "Montagne Enneigée", hint: "Sous la neige froide...", groundColor: 0xeceff1, skyColor: 0xb0bec5, fogColor: 0xb0bec5, fogDensity: 0.025, buttonPos: { x: 25, y: 0.5, z: -40 } },
+            17: { name: "Volcan Actif", hint: "Près de la lave bouillonnante...", groundColor: 0x4a2c2a, skyColor: 0xd32f2f, fogColor: 0xd32f2f, fogDensity: 0.03, buttonPos: { x: -40, y: 0.5, z: -40 } },
+            18: { name: "Labyrinthe de Cristaux", hint: "Parmi les cristaux brillants...", groundColor: 0x1a1a2e, skyColor: 0x0f0f1a, fogColor: 0x0f0f1a, fogDensity: 0.025, buttonPos: { x: -35, y: 0.5, z: 32 } },
+            19: { name: "Dimension Sombre", hint: "Dans les ténèbres absolues...", groundColor: 0x0a0a0a, skyColor: 0x000000, fogColor: 0x0a0a0a, fogDensity: 0.06, buttonPos: { x: 38, y: 0.5, z: 38 } },
+            20: { name: "Sanctuaire Final", hint: "Active les 2 autels pour révéler le bouton ! ⚡", groundColor: 0x1a1a2e, skyColor: 0x1a0a2e, fogColor: 0x1a0a2e, fogDensity: 0.02, buttonPos: { x: 0, y: 0.5, z: -40 }, special: true }
+        };
+
+        // Initialize Three.js
+        function init() {
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, cameraHeight, cameraDistance);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('gameContainer').appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(50, 100, 50);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 500;
+            directionalLight.shadow.camera.left = -100;
+            directionalLight.shadow.camera.right = 100;
+            directionalLight.shadow.camera.top = 100;
+            directionalLight.shadow.camera.bottom = -100;
+            scene.add(directionalLight);
+
+            // Create player
+            createPlayer();
+
+            // Event listeners
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('keydown', onKeyDown);
+            window.addEventListener('keyup', onKeyUp);
+            window.addEventListener('click', onMouseClick);
+            window.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('contextmenu', (e) => e.preventDefault()); // Désactiver menu contextuel
+
+            // UI Event listeners
+            document.getElementById('playBtn').addEventListener('click', startGame);
+            document.getElementById('cameraBtn').addEventListener('click', changeCamera);
+            document.getElementById('menuBtn').addEventListener('click', backToMenu);
+            document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
+            document.getElementById('backToMenuBtn').addEventListener('click', backToMenu);
+
+            // Level buttons
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    selectedLevel = parseInt(btn.dataset.level);
+                });
+            });
+
+            animate();
+        }
+
+        function createPlayer() {
+            player = new THREE.Group();
+
+            // Body (blue shirt)
+            const bodyGeometry = new THREE.BoxGeometry(1, 1.5, 0.6);
+            const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x2563eb });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 1.25;
+            body.castShadow = true;
+            player.add(body);
+
+            // Head (skin color)
+            const headGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+            const skinMaterial = new THREE.MeshLambertMaterial({ color: 0xffdbac });
+            const head = new THREE.Mesh(headGeometry, skinMaterial);
+            head.position.y = 2.4;
+            head.castShadow = true;
+            player.add(head);
+
+            // Cap (blue)
+            const capBaseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 16);
+            const capMaterial = new THREE.MeshLambertMaterial({ color: 0x1d4ed8 });
+            const capBase = new THREE.Mesh(capBaseGeometry, capMaterial);
+            capBase.position.y = 2.9;
+            capBase.castShadow = true;
+            player.add(capBase);
+
+            // Cap visor
+            const visorGeometry = new THREE.BoxGeometry(0.8, 0.1, 0.4);
+            const visor = new THREE.Mesh(visorGeometry, capMaterial);
+            visor.position.set(0, 2.85, 0.5);
+            visor.castShadow = true;
+            player.add(visor);
+
+            // Eyes
+            const eyeGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+            const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.2, 2.45, 0.4);
+            player.add(leftEye);
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.2, 2.45, 0.4);
+            player.add(rightEye);
+
+            // === BRAS AVEC PIVOT (pour animation) ===
+            const armGeometry = new THREE.BoxGeometry(0.3, 1, 0.3);
+
+            // Bras gauche
+            leftArmPivot = new THREE.Group();
+            leftArmPivot.position.set(-0.65, 1.7, 0); // Position de l'épaule
+            const leftArm = new THREE.Mesh(armGeometry, skinMaterial);
+            leftArm.position.y = -0.5; // Décalé vers le bas depuis le pivot
+            leftArm.castShadow = true;
+            leftArmPivot.add(leftArm);
+            player.add(leftArmPivot);
+
+            // Bras droit
+            rightArmPivot = new THREE.Group();
+            rightArmPivot.position.set(0.65, 1.7, 0); // Position de l'épaule
+            const rightArm = new THREE.Mesh(armGeometry, skinMaterial);
+            rightArm.position.y = -0.5;
+            rightArm.castShadow = true;
+            rightArmPivot.add(rightArm);
+            player.add(rightArmPivot);
+
+            // === JAMBES AVEC PIVOT (pour animation) ===
+            const legGeometry = new THREE.BoxGeometry(0.4, 1, 0.4);
+            const legMaterial = new THREE.MeshLambertMaterial({ color: 0x1e40af });
+            const shoeGeometry = new THREE.BoxGeometry(0.45, 0.2, 0.5);
+            const shoeMaterial = new THREE.MeshLambertMaterial({ color: 0x1e1e1e });
+
+            // Jambe gauche avec chaussure
+            leftLegPivot = new THREE.Group();
+            leftLegPivot.position.set(-0.25, 0.8, 0); // Position de la hanche
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.y = -0.5; // Décalé vers le bas depuis le pivot
+            leftLeg.castShadow = true;
+            leftLegPivot.add(leftLeg);
+            // Chaussure gauche attachée à la jambe
+            const leftShoe = new THREE.Mesh(shoeGeometry, shoeMaterial);
+            leftShoe.position.set(0, -0.9, 0.05);
+            leftShoe.castShadow = true;
+            leftLegPivot.add(leftShoe);
+            player.add(leftLegPivot);
+
+            // Jambe droite avec chaussure
+            rightLegPivot = new THREE.Group();
+            rightLegPivot.position.set(0.25, 0.8, 0); // Position de la hanche
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.y = -0.5;
+            rightLeg.castShadow = true;
+            rightLegPivot.add(rightLeg);
+            // Chaussure droite attachée à la jambe
+            const rightShoe = new THREE.Mesh(shoeGeometry, shoeMaterial);
+            rightShoe.position.set(0, -0.9, 0.05);
+            rightShoe.castShadow = true;
+            rightLegPivot.add(rightShoe);
+            player.add(rightLegPivot);
+
+            player.position.y = 0;
+            scene.add(player);
+        }
+
+        function updateWalkAnimation() {
+            // Vérifier si le joueur marche
+            const isMoving = keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight || keys.KeyW || keys.KeyA || keys.KeyS || keys.KeyD;
+
+            if (isMoving && isGrounded) {
+                isWalking = true;
+                walkAnimationTime += 0.15; // Vitesse de l'animation
+
+                // Balancement des jambes (opposées)
+                const legSwing = Math.sin(walkAnimationTime) * 0.6; // Amplitude du balancement
+                leftLegPivot.rotation.x = legSwing;
+                rightLegPivot.rotation.x = -legSwing;
+
+                // Balancement des bras (opposés aux jambes)
+                leftArmPivot.rotation.x = -legSwing * 0.7;
+                rightArmPivot.rotation.x = legSwing * 0.7;
+            } else {
+                isWalking = false;
+                // Retour progressif à la position neutre
+                leftLegPivot.rotation.x *= 0.8;
+                rightLegPivot.rotation.x *= 0.8;
+                leftArmPivot.rotation.x *= 0.8;
+                rightArmPivot.rotation.x *= 0.8;
+            }
+        }
+
+        function createRedButton(x, y, z) {
+            const buttonGroup = new THREE.Group();
+
+            // Button base
+            const baseGeometry = new THREE.CylinderGeometry(0.8, 1, 0.3, 32);
+            const baseMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
+            const base = new THREE.Mesh(baseGeometry, baseMaterial);
+            base.position.y = 0.15;
+            base.castShadow = true;
+            base.receiveShadow = true;
+            buttonGroup.add(base);
+
+            // Button top (red)
+            const topGeometry = new THREE.CylinderGeometry(0.6, 0.7, 0.4, 32);
+            const topMaterial = new THREE.MeshLambertMaterial({ color: 0xe94560 });
+            const top = new THREE.Mesh(topGeometry, topMaterial);
+            top.position.y = 0.5;
+            top.castShadow = true;
+            buttonGroup.add(top);
+
+            // Glow ring
+            const ringGeometry = new THREE.TorusGeometry(0.75, 0.05, 8, 32);
+            const ringMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+            ring.rotation.x = Math.PI / 2;
+            ring.position.y = 0.3;
+            buttonGroup.add(ring);
+
+            buttonGroup.position.set(x, y, z);
+            scene.add(buttonGroup);
+
+            redButton = buttonGroup;
+            redButton.userData.baseY = y;
+            return buttonGroup;
+        }
+
+        function loadLevel(levelNum) {
+            // Clear previous level
+            levelObjects.forEach(obj => scene.remove(obj));
+            levelObjects = [];
+            platforms = [];
+            interactableObjects = [];
+            interactionsCompleted = 0;
+            level20ButtonHidden = (levelNum === 20);
+            if (redButton) scene.remove(redButton);
+
+            const config = levelConfigs[levelNum];
+
+            // Sky and fog
+            scene.background = new THREE.Color(config.skyColor);
+            scene.fog = new THREE.FogExp2(config.fogColor, config.fogDensity);
+
+            // Ground
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshLambertMaterial({ color: config.groundColor });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            levelObjects.push(ground);
+
+            // Create level-specific objects
+            switch (levelNum) {
+                case 1: createGardenLevel(); break;
+                case 2: createForestLevel(); break;
+                case 3: createBeachLevel(); break;
+                case 4: createMeadowLevel(); break;
+                case 5: createVillageLevel(); break;
+                case 6: createSwampLevel(); break;
+                case 7: createBambooLevel(); break;
+                case 8: createCanyonLevel(); break;
+                case 9: createDesertLevel(); break;
+                case 10: createCemeteryLevel(); break;
+                case 11: createRuinsLevel(); break;
+                case 12: createCaveLevel(); break;
+                case 13: createGhostTownLevel(); break;
+                case 14: createTempleLevel(); break;
+                case 15: createJungleLevel(); break;
+                case 16: createSnowLevel(); break;
+                case 17: createVolcanoLevel(); break;
+                case 18: createCrystalLevel(); break;
+                case 19: createDarkDimensionLevel(); break;
+                case 20: createFinalLevel(); break;
+            }
+
+            // Create red button (hidden for level 20)
+            createRedButton(config.buttonPos.x, config.buttonPos.y, config.buttonPos.z);
+            if (levelNum === 20) {
+                redButton.visible = false;
+            }
+
+            // Reset player position
+            player.position.set(0, 0, 0);
+            playerVelocity = { x: 0, y: 0, z: 0 };
+            isGrounded = true;
+
+            // Update UI
+            document.getElementById('currentLevel').textContent = levelNum;
+            document.getElementById('levelName').textContent = config.name;
+            document.getElementById('hintText').textContent = config.hint;
+        }
+
+        function createTree(x, z, scale = 1) {
+            const tree = new THREE.Group();
+
+            // Trunk
+            const trunkGeometry = new THREE.CylinderGeometry(0.3 * scale, 0.5 * scale, 3 * scale, 8);
+            const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 1.5 * scale;
+            trunk.castShadow = true;
+            tree.add(trunk);
+
+            // Leaves (multiple layers)
+            const leavesMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+            for (let i = 0; i < 3; i++) {
+                const leavesGeometry = new THREE.ConeGeometry((2 - i * 0.4) * scale, (2 - i * 0.3) * scale, 8);
+                const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+                leaves.position.y = (3.5 + i * 1.2) * scale;
+                leaves.castShadow = true;
+                tree.add(leaves);
+            }
+
+            tree.position.set(x, 0, z);
+            scene.add(tree);
+            levelObjects.push(tree);
+            return tree;
+        }
+
+        function createRock(x, z, scale = 1) {
+            const rockGeometry = new THREE.DodecahedronGeometry(scale, 0);
+            const rockMaterial = new THREE.MeshLambertMaterial({ color: 0x696969 });
+            const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+            rock.position.set(x, scale * 0.5, z);
+            rock.rotation.set(Math.random(), Math.random(), Math.random());
+            rock.castShadow = true;
+            rock.receiveShadow = true;
+            scene.add(rock);
+            levelObjects.push(rock);
+            return rock;
+        }
+
+        function createHouse(x, z, rotation = 0) {
+            const house = new THREE.Group();
+
+            // Base
+            const baseGeometry = new THREE.BoxGeometry(6, 4, 5);
+            const baseMaterial = new THREE.MeshLambertMaterial({ color: 0xdeb887 });
+            const base = new THREE.Mesh(baseGeometry, baseMaterial);
+            base.position.y = 2;
+            base.castShadow = true;
+            base.receiveShadow = true;
+            house.add(base);
+
+            // Roof
+            const roofGeometry = new THREE.ConeGeometry(5, 3, 4);
+            const roofMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+            roof.position.y = 5.5;
+            roof.rotation.y = Math.PI / 4;
+            roof.castShadow = true;
+            house.add(roof);
+
+            // Door
+            const doorGeometry = new THREE.BoxGeometry(1.2, 2.5, 0.1);
+            const doorMaterial = new THREE.MeshLambertMaterial({ color: 0x4a3728 });
+            const door = new THREE.Mesh(doorGeometry, doorMaterial);
+            door.position.set(0, 1.25, 2.55);
+            house.add(door);
+
+            house.position.set(x, 0, z);
+            house.rotation.y = rotation;
+            scene.add(house);
+            levelObjects.push(house);
+            return house;
+        }
+
+        function createPillar(x, z, height = 8, broken = false) {
+            const pillar = new THREE.Group();
+
+            const pillarHeight = broken ? height * (0.3 + Math.random() * 0.4) : height;
+            const pillarGeometry = new THREE.CylinderGeometry(0.8, 1, pillarHeight, 8);
+            const pillarMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
+            const pillarMesh = new THREE.Mesh(pillarGeometry, pillarMaterial);
+            pillarMesh.position.y = pillarHeight / 2;
+            pillarMesh.castShadow = true;
+            pillarMesh.receiveShadow = true;
+            pillar.add(pillarMesh);
+
+            // Top decoration
+            if (!broken) {
+                const topGeometry = new THREE.BoxGeometry(2, 0.5, 2);
+                const top = new THREE.Mesh(topGeometry, pillarMaterial);
+                top.position.y = pillarHeight + 0.25;
+                top.castShadow = true;
+                pillar.add(top);
+            }
+
+            pillar.position.set(x, 0, z);
+            scene.add(pillar);
+            levelObjects.push(pillar);
+            return pillar;
+        }
+
+        function createPlatform(x, y, z, width = 5, depth = 5) {
+            const platformGeometry = new THREE.BoxGeometry(width, 1, depth);
+            const platformMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+            const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+            platform.position.set(x, y, z);
+            platform.castShadow = true;
+            platform.receiveShadow = true;
+            scene.add(platform);
+            levelObjects.push(platform);
+            platforms.push({
+                mesh: platform,
+                minX: x - width / 2,
+                maxX: x + width / 2,
+                minZ: z - depth / 2,
+                maxZ: z + depth / 2,
+                y: y + 0.5
+            });
+            return platform;
+        }
+
+        function createForestLevel() {
+            // Many trees scattered around
+            for (let i = 0; i < 40; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                if (Math.abs(x) > 5 || Math.abs(z) > 5) {
+                    createTree(x, z, 0.8 + Math.random() * 0.6);
+                }
+            }
+
+            // Tree hiding the button (at x:25, z:-20)
+            createTree(25, -18, 1.5);
+            createTree(27, -21, 1.2);
+            createTree(23, -22, 1.3);
+
+            // Some rocks
+            for (let i = 0; i < 15; i++) {
+                const x = (Math.random() - 0.5) * 70;
+                const z = (Math.random() - 0.5) * 70;
+                createRock(x, z, 0.5 + Math.random() * 1);
+            }
+
+            // Bushes (small green spheres)
+            const bushMaterial = new THREE.MeshLambertMaterial({ color: 0x2d5a27 });
+            for (let i = 0; i < 25; i++) {
+                const bushGeometry = new THREE.SphereGeometry(0.5 + Math.random() * 0.5, 8, 8);
+                const bush = new THREE.Mesh(bushGeometry, bushMaterial);
+                bush.position.set(
+                    (Math.random() - 0.5) * 80,
+                    0.3,
+                    (Math.random() - 0.5) * 80
+                );
+                bush.castShadow = true;
+                scene.add(bush);
+                levelObjects.push(bush);
+            }
+        }
+
+        function createVillageLevel() {
+            // Houses
+            createHouse(10, 10, 0);
+            createHouse(-15, 5, Math.PI / 4);
+            createHouse(5, -15, -Math.PI / 6);
+            createHouse(-10, -20, Math.PI / 2);
+
+            // Broken cart hiding button (at x:-18, z:22)
+            const cart = new THREE.Group();
+            const cartBody = new THREE.BoxGeometry(4, 1.5, 2);
+            const cartMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const cartMesh = new THREE.Mesh(cartBody, cartMaterial);
+            cartMesh.position.y = 0.75;
+            cartMesh.rotation.z = 0.2;
+            cartMesh.castShadow = true;
+            cart.add(cartMesh);
+
+            // Wheels
+            const wheelGeometry = new THREE.CylinderGeometry(0.6, 0.6, 0.2, 16);
+            const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x4a3728 });
+            const wheel1 = new THREE.Mesh(wheelGeometry, wheelMaterial);
+            wheel1.rotation.z = Math.PI / 2;
+            wheel1.position.set(-1.5, 0.3, 1.2);
+            cart.add(wheel1);
+            const wheel2 = new THREE.Mesh(wheelGeometry, wheelMaterial);
+            wheel2.rotation.z = Math.PI / 2;
+            wheel2.position.set(1.5, 0.6, 1.2);
+            cart.add(wheel2);
+
+            cart.position.set(-18, 0, 20);
+            scene.add(cart);
+            levelObjects.push(cart);
+
+            // Barrels
+            const barrelGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1.2, 16);
+            const barrelMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const barrelPositions = [[8, 15], [-8, -10], [20, -5], [-20, 15]];
+            barrelPositions.forEach(pos => {
+                const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
+                barrel.position.set(pos[0], 0.6, pos[1]);
+                barrel.castShadow = true;
+                scene.add(barrel);
+                levelObjects.push(barrel);
+            });
+
+            // Fences
+            const fenceMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            for (let i = -20; i < 25; i += 3) {
+                const post = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.5, 0.2), fenceMaterial);
+                post.position.set(i, 0.75, 30);
+                post.castShadow = true;
+                scene.add(post);
+                levelObjects.push(post);
+            }
+
+            // Some trees
+            for (let i = 0; i < 10; i++) {
+                createTree((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60, 0.7 + Math.random() * 0.5);
+            }
+        }
+
+        function createCanyonLevel() {
+            // Rock walls
+            for (let i = 0; i < 30; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                const scale = 1 + Math.random() * 3;
+                createRock(x, z, scale);
+            }
+
+            // Rock formations hiding the button (at x:15, z:28)
+            createRock(14, 26, 2.5);
+            createRock(17, 29, 2);
+            createRock(13, 30, 1.8);
+            createRock(16, 27, 1.5);
+
+            // Canyon walls (tall rocks on sides)
+            for (let i = -40; i < 40; i += 5) {
+                createRock(-40 + Math.random() * 5, i, 3 + Math.random() * 2);
+                createRock(40 - Math.random() * 5, i, 3 + Math.random() * 2);
+            }
+
+            // Cacti
+            const cactusMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+            for (let i = 0; i < 15; i++) {
+                const cactus = new THREE.Group();
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 2, 8), cactusMaterial);
+                body.position.y = 1;
+                cactus.add(body);
+
+                const arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.8, 8), cactusMaterial);
+                arm1.position.set(0.4, 1.2, 0);
+                arm1.rotation.z = -Math.PI / 4;
+                cactus.add(arm1);
+
+                cactus.position.set((Math.random() - 0.5) * 70, 0, (Math.random() - 0.5) * 70);
+                cactus.castShadow = true;
+                scene.add(cactus);
+                levelObjects.push(cactus);
+            }
+        }
+
+        function createRuinsLevel() {
+            // Pillars in a maze-like pattern
+            const pillarPositions = [
+                [-20, -20], [-20, -10], [-20, 0], [-20, 10], [-20, 20],
+                [-10, -20], [-10, 0], [-10, 20],
+                [0, -20], [0, -10], [0, 10], [0, 20],
+                [10, -20], [10, 0], [10, 20],
+                [20, -20], [20, -10], [20, 0], [20, 10], [20, 20]
+            ];
+
+            pillarPositions.forEach(pos => {
+                createPillar(pos[0], pos[1], 6 + Math.random() * 4, Math.random() > 0.6);
+            });
+
+            // Hiding pillars around button (at x:-25, z:-25)
+            createPillar(-25, -22, 8, false);
+            createPillar(-22, -25, 7, true);
+            createPillar(-28, -25, 6, false);
+            createPillar(-25, -28, 5, true);
+
+            // Fallen pillars
+            for (let i = 0; i < 5; i++) {
+                const fallenGeometry = new THREE.CylinderGeometry(0.8, 1, 6, 8);
+                const fallenMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
+                const fallen = new THREE.Mesh(fallenGeometry, fallenMaterial);
+                fallen.rotation.z = Math.PI / 2;
+                fallen.position.set((Math.random() - 0.5) * 40, 0.8, (Math.random() - 0.5) * 40);
+                fallen.castShadow = true;
+                fallen.receiveShadow = true;
+                scene.add(fallen);
+                levelObjects.push(fallen);
+            }
+
+            // Stone blocks scattered
+            const blockMaterial = new THREE.MeshLambertMaterial({ color: 0x696969 });
+            for (let i = 0; i < 20; i++) {
+                const block = new THREE.Mesh(
+                    new THREE.BoxGeometry(1 + Math.random(), 0.5 + Math.random() * 0.5, 1 + Math.random()),
+                    blockMaterial
+                );
+                block.position.set((Math.random() - 0.5) * 50, 0.25, (Math.random() - 0.5) * 50);
+                block.castShadow = true;
+                block.receiveShadow = true;
+                scene.add(block);
+                levelObjects.push(block);
+            }
+        }
+
+        function createCrystalLevel() {
+            // Niveau 18: Labyrinthe de Cristaux - très difficile à trouver le bouton
+
+            // Fonction pour créer un cristal
+            const createCrystal = (x, z, height, color) => {
+                const crystal = new THREE.Group();
+                const crystalGeometry = new THREE.ConeGeometry(0.8, height, 6);
+                const crystalMaterial = new THREE.MeshLambertMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const crystalMesh = new THREE.Mesh(crystalGeometry, crystalMaterial);
+                crystalMesh.position.y = height / 2;
+                crystalMesh.castShadow = true;
+                crystal.add(crystalMesh);
+
+                // Cristal inversé en dessous (pour l'effet)
+                const crystalBottom = new THREE.Mesh(crystalGeometry, crystalMaterial);
+                crystalBottom.position.y = height / 4;
+                crystalBottom.rotation.x = Math.PI;
+                crystalBottom.scale.set(0.5, 0.3, 0.5);
+                crystal.add(crystalBottom);
+
+                crystal.position.set(x, 0, z);
+                scene.add(crystal);
+                levelObjects.push(crystal);
+            };
+
+            // Fonction pour créer un mur de cristaux
+            const createCrystalWall = (startX, startZ, endX, endZ, segments) => {
+                for (let i = 0; i <= segments; i++) {
+                    const t = i / segments;
+                    const x = startX + (endX - startX) * t;
+                    const z = startZ + (endZ - startZ) * t;
+                    const height = 3 + Math.random() * 4;
+                    const colors = [0x9b59b6, 0x3498db, 0x1abc9c, 0xe74c3c, 0xf39c12];
+                    createCrystal(x + (Math.random() - 0.5) * 2, z + (Math.random() - 0.5) * 2, height, colors[Math.floor(Math.random() * colors.length)]);
+                }
+            };
+
+            // Créer le labyrinthe avec des murs de cristaux
+            // Murs extérieurs
+            createCrystalWall(-40, -40, 40, -40, 20);
+            createCrystalWall(-40, 40, 40, 40, 20);
+            createCrystalWall(-40, -40, -40, 40, 20);
+            createCrystalWall(40, -40, 40, 40, 20);
+
+            // Murs intérieurs du labyrinthe
+            createCrystalWall(-30, -20, -10, -20, 8);
+            createCrystalWall(10, -30, 10, -10, 8);
+            createCrystalWall(-20, 0, 20, 0, 15);
+            createCrystalWall(-30, 15, -10, 15, 8);
+            createCrystalWall(15, 10, 15, 35, 10);
+            createCrystalWall(-35, 25, -20, 25, 6);
+            createCrystalWall(0, 20, 0, 35, 6);
+            createCrystalWall(-25, -35, -25, -10, 10);
+            createCrystalWall(25, -25, 35, -25, 5);
+            createCrystalWall(20, 25, 35, 25, 6);
+
+            // Cristaux isolés pour remplir et confondre
+            for (let i = 0; i < 80; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                const height = 1 + Math.random() * 3;
+                const colors = [0x9b59b6, 0x3498db, 0x1abc9c, 0xe74c3c, 0xf39c12, 0x8e44ad];
+                createCrystal(x, z, height, colors[Math.floor(Math.random() * colors.length)]);
+            }
+
+            // Gros cristaux pour cacher des zones
+            createCrystal(-35, 30, 6, 0x8e44ad);
+            createCrystal(-33, 34, 5, 0x9b59b6);
+            createCrystal(-37, 33, 4, 0x3498db);
+            createCrystal(-34, 31, 5.5, 0x1abc9c);
+
+            // Rochers sombres dispersés
+            const darkRockMaterial = new THREE.MeshLambertMaterial({ color: 0x2c2c3e });
+            for (let i = 0; i < 30; i++) {
+                const rockGeometry = new THREE.DodecahedronGeometry(1 + Math.random() * 2, 0);
+                const rock = new THREE.Mesh(rockGeometry, darkRockMaterial);
+                rock.position.set(
+                    (Math.random() - 0.5) * 80,
+                    0.5 + Math.random(),
+                    (Math.random() - 0.5) * 80
+                );
+                rock.rotation.set(Math.random(), Math.random(), Math.random());
+                rock.castShadow = true;
+                scene.add(rock);
+                levelObjects.push(rock);
+            }
+
+            // Champignons lumineux (décoration)
+            const mushroomColors = [0xff6b6b, 0x4ecdc4, 0xffe66d, 0x95e1d3];
+            for (let i = 0; i < 25; i++) {
+                const mushroom = new THREE.Group();
+                const stemGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.6, 8);
+                const stemMaterial = new THREE.MeshLambertMaterial({ color: 0xeeeeee });
+                const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+                stem.position.y = 0.3;
+                mushroom.add(stem);
+
+                const capGeometry = new THREE.SphereGeometry(0.4, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+                const capMaterial = new THREE.MeshLambertMaterial({
+                    color: mushroomColors[Math.floor(Math.random() * mushroomColors.length)],
+                    emissive: mushroomColors[Math.floor(Math.random() * mushroomColors.length)],
+                    emissiveIntensity: 0.3
+                });
+                const cap = new THREE.Mesh(capGeometry, capMaterial);
+                cap.position.y = 0.6;
+                mushroom.add(cap);
+
+                mushroom.position.set(
+                    (Math.random() - 0.5) * 70,
+                    0,
+                    (Math.random() - 0.5) * 70
+                );
+                mushroom.scale.set(0.8 + Math.random() * 0.5, 0.8 + Math.random() * 0.5, 0.8 + Math.random() * 0.5);
+                scene.add(mushroom);
+                levelObjects.push(mushroom);
+            }
+
+            // Lumière d'ambiance supplémentaire (point lights colorés)
+            const pointLight1 = new THREE.PointLight(0x9b59b6, 0.5, 30);
+            pointLight1.position.set(-20, 5, -20);
+            scene.add(pointLight1);
+            levelObjects.push(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0x3498db, 0.5, 30);
+            pointLight2.position.set(20, 5, 20);
+            scene.add(pointLight2);
+            levelObjects.push(pointLight2);
+
+            const pointLight3 = new THREE.PointLight(0x1abc9c, 0.5, 30);
+            pointLight3.position.set(-30, 5, 30);
+            scene.add(pointLight3);
+            levelObjects.push(pointLight3);
+        }
+
+        // === NIVEAU 1: Jardin Fleuri ===
+        function createGardenLevel() {
+            // Fleurs colorées
+            const flowerColors = [0xff6b6b, 0xfeca57, 0xff9ff3, 0x54a0ff, 0x5f27cd];
+            for (let i = 0; i < 100; i++) {
+                const flower = new THREE.Group();
+                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.5, 8), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
+                stem.position.y = 0.25;
+                flower.add(stem);
+                const petals = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshLambertMaterial({ color: flowerColors[Math.floor(Math.random() * flowerColors.length)] }));
+                petals.position.y = 0.5;
+                flower.add(petals);
+                flower.position.set((Math.random() - 0.5) * 80, 0, (Math.random() - 0.5) * 80);
+                scene.add(flower);
+                levelObjects.push(flower);
+            }
+            // Quelques arbustes
+            for (let i = 0; i < 20; i++) {
+                const bush = new THREE.Mesh(new THREE.SphereGeometry(1 + Math.random(), 8, 8), new THREE.MeshLambertMaterial({ color: 0x2ecc71 }));
+                bush.position.set((Math.random() - 0.5) * 70, 0.5, (Math.random() - 0.5) * 70);
+                bush.castShadow = true;
+                scene.add(bush);
+                levelObjects.push(bush);
+            }
+            // Buissons près du bouton
+            const hidingBush = new THREE.Mesh(new THREE.SphereGeometry(2, 8, 8), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
+            hidingBush.position.set(14, 1, 9);
+            scene.add(hidingBush);
+            levelObjects.push(hidingBush);
+        }
+
+        // === NIVEAU 3: Plage Tropicale ===
+        function createBeachLevel() {
+            // Palmiers
+            const createPalm = (x, z) => {
+                const palm = new THREE.Group();
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 5, 8), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
+                trunk.position.y = 2.5;
+                trunk.rotation.z = Math.random() * 0.2 - 0.1;
+                palm.add(trunk);
+                for (let i = 0; i < 6; i++) {
+                    const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.3, 3, 4), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
+                    leaf.position.set(0, 5, 0);
+                    leaf.rotation.z = Math.PI / 3;
+                    leaf.rotation.y = (i / 6) * Math.PI * 2;
+                    palm.add(leaf);
+                }
+                palm.position.set(x, 0, z);
+                scene.add(palm);
+                levelObjects.push(palm);
+            };
+            for (let i = 0; i < 25; i++) createPalm((Math.random() - 0.5) * 70, (Math.random() - 0.5) * 70);
+            createPalm(-21, 24);
+            createPalm(-19, 26);
+            // Rochers de plage
+            for (let i = 0; i < 15; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.5 + Math.random()), new THREE.MeshLambertMaterial({ color: 0xbdc3c7 }));
+                rock.position.set((Math.random() - 0.5) * 60, 0.3, (Math.random() - 0.5) * 60);
+                scene.add(rock);
+                levelObjects.push(rock);
+            }
+            // Eau
+            const water = new THREE.Mesh(new THREE.PlaneGeometry(100, 40), new THREE.MeshLambertMaterial({ color: 0x3498db, transparent: true, opacity: 0.7 }));
+            water.rotation.x = -Math.PI / 2;
+            water.position.set(0, 0.1, 40);
+            scene.add(water);
+            levelObjects.push(water);
+        }
+
+        // === NIVEAU 4: Prairie Verdoyante ===
+        function createMeadowLevel() {
+            // Hautes herbes
+            const grassMaterial = new THREE.MeshLambertMaterial({ color: 0x7dcea0 });
+            for (let i = 0; i < 200; i++) {
+                const grass = new THREE.Mesh(new THREE.ConeGeometry(0.1, 1 + Math.random(), 4), grassMaterial);
+                grass.position.set((Math.random() - 0.5) * 80, 0.5, (Math.random() - 0.5) * 80);
+                scene.add(grass);
+                levelObjects.push(grass);
+            }
+            // Fleurs dispersées
+            for (let i = 0; i < 50; i++) {
+                const flower = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 6), new THREE.MeshLambertMaterial({ color: [0xf1c40f, 0xe74c3c, 0x9b59b6][Math.floor(Math.random() * 3)] }));
+                flower.position.set((Math.random() - 0.5) * 70, 0.8, (Math.random() - 0.5) * 70);
+                scene.add(flower);
+                levelObjects.push(flower);
+            }
+            // Zone dense cachant le bouton
+            for (let i = 0; i < 30; i++) {
+                const tallGrass = new THREE.Mesh(new THREE.ConeGeometry(0.15, 2, 4), grassMaterial);
+                tallGrass.position.set(30 + (Math.random() - 0.5) * 5, 1, -15 + (Math.random() - 0.5) * 5);
+                scene.add(tallGrass);
+                levelObjects.push(tallGrass);
+            }
+        }
+
+        // === NIVEAU 6: Marais Brumeux ===
+        function createSwampLevel() {
+            // Eau marécageuse
+            const swampWater = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshLambertMaterial({ color: 0x2e7d32, transparent: true, opacity: 0.6 }));
+            swampWater.rotation.x = -Math.PI / 2;
+            swampWater.position.y = 0.05;
+            scene.add(swampWater);
+            levelObjects.push(swampWater);
+            // Îlots
+            for (let i = 0; i < 20; i++) {
+                const island = new THREE.Mesh(new THREE.CylinderGeometry(2 + Math.random() * 2, 3 + Math.random() * 2, 0.5, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
+                island.position.set((Math.random() - 0.5) * 70, 0.2, (Math.random() - 0.5) * 70);
+                scene.add(island);
+                levelObjects.push(island);
+            }
+            // Arbres morts
+            for (let i = 0; i < 15; i++) {
+                const deadTree = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.4, 4, 6), new THREE.MeshLambertMaterial({ color: 0x4e342e }));
+                deadTree.position.set((Math.random() - 0.5) * 60, 2, (Math.random() - 0.5) * 60);
+                deadTree.rotation.z = Math.random() * 0.3 - 0.15;
+                scene.add(deadTree);
+                levelObjects.push(deadTree);
+            }
+            // Cachette du bouton
+            const hideIsland = new THREE.Mesh(new THREE.CylinderGeometry(3, 4, 0.6, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
+            hideIsland.position.set(28, 0.2, 28);
+            scene.add(hideIsland);
+            levelObjects.push(hideIsland);
+        }
+
+        // === NIVEAU 7: Forêt de Bambou ===
+        function createBambooLevel() {
+            const createBamboo = (x, z, height) => {
+                const bamboo = new THREE.Group();
+                const segments = Math.floor(height / 1.5);
+                for (let i = 0; i < segments; i++) {
+                    const segment = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1.4, 8), new THREE.MeshLambertMaterial({ color: 0x7cb342 }));
+                    segment.position.y = i * 1.5 + 0.7;
+                    bamboo.add(segment);
+                    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.03, 8, 16), new THREE.MeshLambertMaterial({ color: 0x558b2f }));
+                    ring.rotation.x = Math.PI / 2;
+                    ring.position.y = i * 1.5;
+                    bamboo.add(ring);
+                }
+                bamboo.position.set(x, 0, z);
+                scene.add(bamboo);
+                levelObjects.push(bamboo);
+            };
+            for (let i = 0; i < 150; i++) createBamboo((Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, 4 + Math.random() * 4);
+            // Dense autour du bouton
+            for (let i = 0; i < 30; i++) createBamboo(-25 + (Math.random() - 0.5) * 8, -30 + (Math.random() - 0.5) * 8, 5 + Math.random() * 3);
+        }
+
+        // === NIVEAU 9: Désert Aride ===
+        function createDesertLevel() {
+            // Dunes
+            for (let i = 0; i < 25; i++) {
+                const dune = new THREE.Mesh(new THREE.SphereGeometry(5 + Math.random() * 8, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xdaa520 }));
+                dune.position.set((Math.random() - 0.5) * 80, 0, (Math.random() - 0.5) * 80);
+                scene.add(dune);
+                levelObjects.push(dune);
+            }
+            // Cactus
+            for (let i = 0; i < 20; i++) {
+                const cactus = new THREE.Group();
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.5, 3, 8), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
+                body.position.y = 1.5;
+                cactus.add(body);
+                const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 1.5, 8), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
+                arm.position.set(0.5, 2, 0);
+                arm.rotation.z = -Math.PI / 4;
+                cactus.add(arm);
+                cactus.position.set((Math.random() - 0.5) * 70, 0, (Math.random() - 0.5) * 70);
+                scene.add(cactus);
+                levelObjects.push(cactus);
+            }
+            // Grande dune cachant le bouton
+            const hideDune = new THREE.Mesh(new THREE.SphereGeometry(8, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xdaa520 }));
+            hideDune.position.set(-35, 0, 18);
+            scene.add(hideDune);
+            levelObjects.push(hideDune);
+        }
+
+        // === NIVEAU 10: Cimetière Lugubre ===
+        function createCemeteryLevel() {
+            // Tombes
+            const createTombstone = (x, z, type) => {
+                const tomb = new THREE.Group();
+                if (type === 0) {
+                    const stone = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 0.2), new THREE.MeshLambertMaterial({ color: 0x7f8c8d }));
+                    stone.position.y = 0.75;
+                    tomb.add(stone);
+                } else {
+                    const cross = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.8, 0.15), new THREE.MeshLambertMaterial({ color: 0x95a5a6 }));
+                    cross.position.y = 0.9;
+                    tomb.add(cross);
+                    const crossArm = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.15, 0.15), new THREE.MeshLambertMaterial({ color: 0x95a5a6 }));
+                    crossArm.position.y = 1.3;
+                    tomb.add(crossArm);
+                }
+                tomb.position.set(x, 0, z);
+                tomb.rotation.y = Math.random() * 0.3 - 0.15;
+                scene.add(tomb);
+                levelObjects.push(tomb);
+            };
+            for (let i = 0; i < 50; i++) createTombstone((Math.random() - 0.5) * 70, (Math.random() - 0.5) * 70, Math.floor(Math.random() * 2));
+            // Arbres morts
+            for (let i = 0; i < 10; i++) {
+                const tree = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 5, 6), new THREE.MeshLambertMaterial({ color: 0x3d3d3d }));
+                tree.position.set((Math.random() - 0.5) * 60, 2.5, (Math.random() - 0.5) * 60);
+                scene.add(tree);
+                levelObjects.push(tree);
+            }
+            // Cachette: groupe de tombes
+            for (let i = 0; i < 8; i++) createTombstone(20 + (Math.random() - 0.5) * 6, -35 + (Math.random() - 0.5) * 6, Math.floor(Math.random() * 2));
+        }
+
+        // === NIVEAU 12: Grotte Souterraine ===
+        function createCaveLevel() {
+            // Stalactites et stalagmites
+            for (let i = 0; i < 60; i++) {
+                const stalactite = new THREE.Mesh(new THREE.ConeGeometry(0.5, 3 + Math.random() * 3, 6), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
+                stalactite.position.set((Math.random() - 0.5) * 80, 8 + Math.random() * 5, (Math.random() - 0.5) * 80);
+                stalactite.rotation.x = Math.PI;
+                scene.add(stalactite);
+                levelObjects.push(stalactite);
+            }
+            for (let i = 0; i < 50; i++) {
+                const stalagmite = new THREE.Mesh(new THREE.ConeGeometry(0.4, 2 + Math.random() * 2, 6), new THREE.MeshLambertMaterial({ color: 0x4e342e }));
+                stalagmite.position.set((Math.random() - 0.5) * 80, (1 + Math.random()) / 2, (Math.random() - 0.5) * 80);
+                scene.add(stalagmite);
+                levelObjects.push(stalagmite);
+            }
+            // Rochers
+            for (let i = 0; i < 30; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random() * 2), new THREE.MeshLambertMaterial({ color: 0x3e2723 }));
+                rock.position.set((Math.random() - 0.5) * 70, 0.5, (Math.random() - 0.5) * 70);
+                scene.add(rock);
+                levelObjects.push(rock);
+            }
+            // Plafond
+            const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshLambertMaterial({ color: 0x1a1a1a }));
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.y = 15;
+            scene.add(ceiling);
+            levelObjects.push(ceiling);
+            // Lumières de champignons
+            const light1 = new THREE.PointLight(0x00ff88, 0.5, 15);
+            light1.position.set(30, 2, 35);
+            scene.add(light1);
+            levelObjects.push(light1);
+        }
+
+        // === NIVEAU 13: Ville Fantôme ===
+        function createGhostTownLevel() {
+            // Maisons abandonnées
+            const createBuilding = (x, z, w, h, d) => {
+                const building = new THREE.Group();
+                const walls = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color: 0x5d5d5d }));
+                walls.position.y = h / 2;
+                building.add(walls);
+                const roof = new THREE.Mesh(new THREE.ConeGeometry(w * 0.8, 2, 4), new THREE.MeshLambertMaterial({ color: 0x4a4a4a }));
+                roof.position.y = h + 1;
+                roof.rotation.y = Math.PI / 4;
+                building.add(roof);
+                building.position.set(x, 0, z);
+                scene.add(building);
+                levelObjects.push(building);
+            };
+            createBuilding(-20, 0, 8, 6, 6);
+            createBuilding(15, 10, 6, 5, 5);
+            createBuilding(-10, -20, 7, 5, 6);
+            createBuilding(20, -15, 5, 4, 5);
+            createBuilding(-25, 15, 6, 5, 5);
+            createBuilding(0, 25, 8, 6, 7);
+            createBuilding(-30, -18, 5, 4, 5);
+            // Lampadaires cassés
+            for (let i = 0; i < 10; i++) {
+                const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 4, 8), new THREE.MeshLambertMaterial({ color: 0x2c2c2c }));
+                lamp.position.set((Math.random() - 0.5) * 60, 2, (Math.random() - 0.5) * 60);
+                lamp.rotation.z = Math.random() * 0.4 - 0.2;
+                scene.add(lamp);
+                levelObjects.push(lamp);
+            }
+        }
+
+        // === NIVEAU 14: Temple Ancien ===
+        function createTempleLevel() {
+            // Structure principale
+            const base = new THREE.Mesh(new THREE.BoxGeometry(30, 2, 30), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
+            base.position.set(0, 1, -20);
+            scene.add(base);
+            levelObjects.push(base);
+            // Colonnes
+            for (let i = 0; i < 8; i++) {
+                const col = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1, 8, 12), new THREE.MeshLambertMaterial({ color: 0xa1887f }));
+                const angle = (i / 8) * Math.PI * 2;
+                col.position.set(Math.cos(angle) * 12, 5, -20 + Math.sin(angle) * 12);
+                scene.add(col);
+                levelObjects.push(col);
+            }
+            // Statues
+            for (let i = 0; i < 4; i++) {
+                const statue = new THREE.Group();
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 3, 1), new THREE.MeshLambertMaterial({ color: 0x757575 }));
+                body.position.y = 1.5;
+                statue.add(body);
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 8, 8), new THREE.MeshLambertMaterial({ color: 0x757575 }));
+                head.position.y = 3.5;
+                statue.add(head);
+                statue.position.set([-20, 20, -20, 20][i], 0, [-40, -40, 0, 0][i]);
+                scene.add(statue);
+                levelObjects.push(statue);
+            }
+            // Cachette au fond
+            const wall = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 1), new THREE.MeshLambertMaterial({ color: 0x6d4c41 }));
+            wall.position.set(35, 2.5, -33);
+            scene.add(wall);
+            levelObjects.push(wall);
+        }
+
+        // === NIVEAU 15: Jungle Dense ===
+        function createJungleLevel() {
+            // Arbres géants
+            for (let i = 0; i < 40; i++) {
+                const tree = new THREE.Group();
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 8 + Math.random() * 4, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
+                trunk.position.y = 4;
+                tree.add(trunk);
+                const canopy = new THREE.Mesh(new THREE.SphereGeometry(4 + Math.random() * 2, 8, 8), new THREE.MeshLambertMaterial({ color: 0x2e7d32 }));
+                canopy.position.y = 10;
+                tree.add(canopy);
+                tree.position.set((Math.random() - 0.5) * 80, 0, (Math.random() - 0.5) * 80);
+                scene.add(tree);
+                levelObjects.push(tree);
+            }
+            // Buissons denses
+            for (let i = 0; i < 80; i++) {
+                const bush = new THREE.Mesh(new THREE.SphereGeometry(1 + Math.random(), 6, 6), new THREE.MeshLambertMaterial({ color: 0x388e3c }));
+                bush.position.set((Math.random() - 0.5) * 80, 0.5, (Math.random() - 0.5) * 80);
+                scene.add(bush);
+                levelObjects.push(bush);
+            }
+            // Zone très dense pour cacher le bouton
+            for (let i = 0; i < 20; i++) {
+                const denseBush = new THREE.Mesh(new THREE.SphereGeometry(1.5 + Math.random(), 6, 6), new THREE.MeshLambertMaterial({ color: 0x1b5e20 }));
+                denseBush.position.set(-38 + (Math.random() - 0.5) * 6, 1, 38 + (Math.random() - 0.5) * 6);
+                scene.add(denseBush);
+                levelObjects.push(denseBush);
+            }
+        }
+
+        // === NIVEAU 16: Montagne Enneigée ===
+        function createSnowLevel() {
+            // Sapins enneigés
+            for (let i = 0; i < 35; i++) {
+                const pine = new THREE.Group();
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 2, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
+                trunk.position.y = 1;
+                pine.add(trunk);
+                for (let j = 0; j < 4; j++) {
+                    const layer = new THREE.Mesh(new THREE.ConeGeometry(2 - j * 0.4, 2, 8), new THREE.MeshLambertMaterial({ color: 0xeceff1 }));
+                    layer.position.y = 2.5 + j * 1.2;
+                    pine.add(layer);
+                }
+                pine.position.set((Math.random() - 0.5) * 80, 0, (Math.random() - 0.5) * 80);
+                scene.add(pine);
+                levelObjects.push(pine);
+            }
+            // Rochers enneigés
+            for (let i = 0; i < 25; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random() * 2), new THREE.MeshLambertMaterial({ color: 0xcfd8dc }));
+                rock.position.set((Math.random() - 0.5) * 70, 0.5, (Math.random() - 0.5) * 70);
+                scene.add(rock);
+                levelObjects.push(rock);
+            }
+            // Congère cachant le bouton
+            const snowDrift = new THREE.Mesh(new THREE.SphereGeometry(4, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+            snowDrift.position.set(25, 0, -38);
+            scene.add(snowDrift);
+            levelObjects.push(snowDrift);
+        }
+
+        // === NIVEAU 17: Volcan Actif ===
+        function createVolcanoLevel() {
+            // Rochers volcaniques
+            for (let i = 0; i < 40; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random() * 2), new THREE.MeshLambertMaterial({ color: 0x37474f }));
+                rock.position.set((Math.random() - 0.5) * 80, 0.5, (Math.random() - 0.5) * 80);
+                scene.add(rock);
+                levelObjects.push(rock);
+            }
+            // Flaques de lave
+            for (let i = 0; i < 15; i++) {
+                const lava = new THREE.Mesh(new THREE.CircleGeometry(2 + Math.random() * 3, 16), new THREE.MeshBasicMaterial({ color: 0xff5722 }));
+                lava.rotation.x = -Math.PI / 2;
+                lava.position.set((Math.random() - 0.5) * 70, 0.1, (Math.random() - 0.5) * 70);
+                scene.add(lava);
+                levelObjects.push(lava);
+            }
+            // Cratère central
+            const crater = new THREE.Mesh(new THREE.TorusGeometry(10, 3, 8, 16), new THREE.MeshLambertMaterial({ color: 0x3e2723 }));
+            crater.rotation.x = Math.PI / 2;
+            crater.position.set(0, 0.5, 0);
+            scene.add(crater);
+            levelObjects.push(crater);
+            // Lumière orange
+            const lavaLight = new THREE.PointLight(0xff5722, 1, 50);
+            lavaLight.position.set(0, 5, 0);
+            scene.add(lavaLight);
+            levelObjects.push(lavaLight);
+            // Cachette
+            for (let i = 0; i < 8; i++) {
+                const hideRock = new THREE.Mesh(new THREE.DodecahedronGeometry(2 + Math.random()), new THREE.MeshLambertMaterial({ color: 0x37474f }));
+                hideRock.position.set(-40 + (Math.random() - 0.5) * 5, 1, -40 + (Math.random() - 0.5) * 5);
+                scene.add(hideRock);
+                levelObjects.push(hideRock);
+            }
+        }
+
+        // === NIVEAU 19: Dimension Sombre ===
+        function createDarkDimensionLevel() {
+            // Piliers flottants
+            for (let i = 0; i < 30; i++) {
+                const pillar = new THREE.Mesh(new THREE.BoxGeometry(2, 10 + Math.random() * 10, 2), new THREE.MeshLambertMaterial({ color: 0x1a1a1a }));
+                pillar.position.set((Math.random() - 0.5) * 80, 5, (Math.random() - 0.5) * 80);
+                scene.add(pillar);
+                levelObjects.push(pillar);
+            }
+            // Orbes lumineux (seule source de lumière)
+            const orbColors = [0x9b59b6, 0xe74c3c, 0x3498db];
+            for (let i = 0; i < 8; i++) {
+                const orb = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), new THREE.MeshBasicMaterial({ color: orbColors[i % 3] }));
+                orb.position.set((Math.random() - 0.5) * 60, 3 + Math.random() * 5, (Math.random() - 0.5) * 60);
+                scene.add(orb);
+                levelObjects.push(orb);
+                const light = new THREE.PointLight(orbColors[i % 3], 0.5, 20);
+                light.position.copy(orb.position);
+                scene.add(light);
+                levelObjects.push(light);
+            }
+            // Structures étranges
+            for (let i = 0; i < 15; i++) {
+                const struct = new THREE.Mesh(new THREE.OctahedronGeometry(2), new THREE.MeshLambertMaterial({ color: 0x2c2c2c }));
+                struct.position.set((Math.random() - 0.5) * 70, 2, (Math.random() - 0.5) * 70);
+                struct.rotation.set(Math.random(), Math.random(), Math.random());
+                scene.add(struct);
+                levelObjects.push(struct);
+            }
+            // Cachette
+            for (let i = 0; i < 6; i++) {
+                const hidePillar = new THREE.Mesh(new THREE.BoxGeometry(3, 15, 3), new THREE.MeshLambertMaterial({ color: 0x0a0a0a }));
+                hidePillar.position.set(38 + (Math.random() - 0.5) * 5, 7.5, 38 + (Math.random() - 0.5) * 5);
+                scene.add(hidePillar);
+                levelObjects.push(hidePillar);
+            }
+        }
+
+        // === NIVEAU 20: Sanctuaire Final (SPÉCIAL) ===
+        function createFinalLevel() {
+            // Structure centrale majestueuse
+            const platform = new THREE.Mesh(new THREE.CylinderGeometry(15, 18, 2, 32), new THREE.MeshLambertMaterial({ color: 0x4a148c }));
+            platform.position.set(0, 1, 0);
+            scene.add(platform);
+            levelObjects.push(platform);
+
+            // Colonnes d'or
+            for (let i = 0; i < 12; i++) {
+                const col = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 10, 12), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+                const angle = (i / 12) * Math.PI * 2;
+                col.position.set(Math.cos(angle) * 20, 5, Math.sin(angle) * 20);
+                scene.add(col);
+                levelObjects.push(col);
+            }
+
+            // Créer les 2 AUTELS interactifs
+            const createAltar = (x, z, color, index) => {
+                const altar = new THREE.Group();
+                const base = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 3), new THREE.MeshLambertMaterial({ color: 0x37474f }));
+                base.position.y = 0.5;
+                altar.add(base);
+                const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(1), new THREE.MeshLambertMaterial({ color: color, emissive: color, emissiveIntensity: 0.3 }));
+                crystal.position.y = 2;
+                crystal.userData.isInteractable = true;
+                crystal.userData.altarIndex = index;
+                crystal.userData.activated = false;
+                altar.add(crystal);
+                altar.position.set(x, 0, z);
+                altar.userData.crystal = crystal;
+                scene.add(altar);
+                levelObjects.push(altar);
+                interactableObjects.push({ altar, crystal, activated: false, index });
+
+                // Lumière
+                const light = new THREE.PointLight(color, 0.3, 15);
+                light.position.set(x, 3, z);
+                scene.add(light);
+                levelObjects.push(light);
+            };
+
+            createAltar(-25, 0, 0x00bcd4, 0);  // Autel cyan à gauche
+            createAltar(25, 0, 0xff9800, 1);   // Autel orange à droite
+
+            // Décoration: rochers mystiques
+            for (let i = 0; i < 20; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random()), new THREE.MeshLambertMaterial({ color: 0x311b92 }));
+                rock.position.set((Math.random() - 0.5) * 70, 0.5, (Math.random() - 0.5) * 70);
+                scene.add(rock);
+                levelObjects.push(rock);
+            }
+
+            // Arbres mystiques
+            for (let i = 0; i < 15; i++) {
+                const tree = new THREE.Group();
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 5, 8), new THREE.MeshLambertMaterial({ color: 0x4a148c }));
+                trunk.position.y = 2.5;
+                tree.add(trunk);
+                const leaves = new THREE.Mesh(new THREE.SphereGeometry(2, 8, 8), new THREE.MeshLambertMaterial({ color: 0x7b1fa2 }));
+                leaves.position.y = 6;
+                tree.add(leaves);
+                tree.position.set((Math.random() - 0.5) * 60, 0, (Math.random() - 0.5) * 60);
+                scene.add(tree);
+                levelObjects.push(tree);
+            }
+
+            // Lumière ambiante spéciale
+            const ambientPurple = new THREE.PointLight(0x9c27b0, 0.5, 100);
+            ambientPurple.position.set(0, 20, 0);
+            scene.add(ambientPurple);
+            levelObjects.push(ambientPurple);
+        }
+
+        // Fonction pour interagir avec les autels (niveau 20)
+        function interactWithAltar() {
+            if (currentLevel !== 20 || !isPlaying) return;
+
+            interactableObjects.forEach(obj => {
+                if (obj.activated) return;
+
+                const dx = player.position.x - obj.altar.position.x;
+                const dz = player.position.z - obj.altar.position.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+
+                if (distance < 4) {
+                    obj.activated = true;
+                    obj.crystal.material.emissiveIntensity = 1;
+                    obj.crystal.scale.set(1.5, 1.5, 1.5);
+                    interactionsCompleted++;
+
+                    // Si les 2 autels sont activés, révéler le bouton
+                    if (interactionsCompleted >= 2) {
+                        level20ButtonHidden = false;
+                        redButton.visible = true;
+                        document.getElementById('hintText').textContent = "Le bouton est apparu au nord ! 🔴";
+                    } else {
+                        document.getElementById('hintText').textContent = "Autel activé ! Il en reste 1...";
+                    }
+                }
+            });
+        }
+
+        function startGame() {
+            currentLevel = selectedLevel;
+            loadLevel(currentLevel);
+
+            document.getElementById('menuScreen').style.display = 'none';
+            document.getElementById('gameUI').style.display = 'flex';
+            document.getElementById('cameraBtn').style.display = 'block';
+            document.getElementById('menuBtn').style.display = 'block';
+            document.getElementById('crosshair').style.display = 'block';
+            document.getElementById('timer').style.display = 'block';
+
+            isPlaying = true;
+            timerStart = Date.now();
+            timerInterval = setInterval(updateTimer, 100);
+        }
+
+        function updateTimer() {
+            const elapsed = Date.now() - timerStart;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            document.getElementById('timer').textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function changeCamera() {
+            isFirstPerson = !isFirstPerson;
+            if (isFirstPerson) {
+                document.getElementById('cameraBtn').textContent = '👁️ VUE 1ÈRE PERSONNE';
+                // Cacher le personnage en vue 1ère personne
+                player.visible = false;
+            } else {
+                document.getElementById('cameraBtn').textContent = '📷 VUE 3ÈME PERSONNE';
+                player.visible = true;
+            }
+        }
+
+        function onMouseDown(event) {
+            if (event.button === 2) { // Clic droit
+                isRightMouseDown = true;
+                lastMouseX = event.clientX;
+                lastMouseY = event.clientY;
+            }
+        }
+
+        function onMouseUp(event) {
+            if (event.button === 2) {
+                isRightMouseDown = false;
+            }
+        }
+
+        function onMouseMove(event) {
+            if (isRightMouseDown && isPlaying) {
+                const deltaX = event.clientX - lastMouseX;
+                const deltaY = event.clientY - lastMouseY;
+
+                // Sensibilité de la souris
+                const sensitivity = 0.005;
+
+                // Rotation horizontale (yaw)
+                cameraYaw -= deltaX * sensitivity;
+
+                // Rotation verticale (pitch) - limitée pour ne pas faire de looping
+                cameraPitch += deltaY * sensitivity;
+                cameraPitch = Math.max(-0.5, Math.min(1.2, cameraPitch)); // Limiter entre -0.5 et 1.2 radians
+
+                lastMouseX = event.clientX;
+                lastMouseY = event.clientY;
+            }
+        }
+
+        function backToMenu() {
+            document.getElementById('menuScreen').style.display = 'flex';
+            document.getElementById('winScreen').style.display = 'none';
+            document.getElementById('gameUI').style.display = 'none';
+            document.getElementById('cameraBtn').style.display = 'none';
+            document.getElementById('menuBtn').style.display = 'none';
+            document.getElementById('crosshair').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('buttonIndicator').style.display = 'none';
+            document.getElementById('altarIndicator').style.display = 'none';
+
+            isPlaying = false;
+            if (timerInterval) clearInterval(timerInterval);
+        }
+
+        function nextLevel() {
+            if (currentLevel < 20) {
+                currentLevel++;
+                selectedLevel = currentLevel;
+
+                // IMPORTANT: Réinitialiser canPressButton pour éviter le bug de victoire instantanée
+                canPressButton = false;
+
+                // Update selected button
+                document.querySelectorAll('.level-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                    if (parseInt(btn.dataset.level) === currentLevel) {
+                        btn.classList.add('selected');
+                    }
+                });
+
+                // Cacher le winScreen AVANT de commencer
+                document.getElementById('winScreen').style.display = 'none';
+                document.getElementById('buttonIndicator').style.display = 'none';
+                document.getElementById('altarIndicator').style.display = 'none';
+
+                loadLevel(currentLevel);
+
+                timerStart = Date.now();
+                timerInterval = setInterval(updateTimer, 100); // Relancer le timer !
+                isPlaying = true;
+            } else {
+                backToMenu();
+            }
+        }
+
+        function winLevel() {
+            isPlaying = false;
+            if (timerInterval) clearInterval(timerInterval);
+
+            const elapsed = Date.now() - timerStart;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+
+            document.getElementById('winTime').textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('winScreen').style.display = 'flex';
+            document.getElementById('buttonIndicator').style.display = 'none';
+
+            if (currentLevel >= 20) {
+                document.getElementById('nextLevelBtn').textContent = 'RETOUR AU MENU';
+            } else {
+                document.getElementById('nextLevelBtn').textContent = 'NIVEAU SUIVANT';
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onKeyDown(event) {
+            if (keys.hasOwnProperty(event.code)) {
+                keys[event.code] = true;
+            }
+            if (event.code === 'Space' && isGrounded && isPlaying) {
+                playerVelocity.y = jumpForce;
+                isGrounded = false;
+            }
+            // Appuyer sur le bouton avec Entrée
+            if (event.code === 'Enter' && canPressButton && isPlaying) {
+                winLevel();
+            }
+            // Interagir avec les autels au niveau 20
+            if (event.code === 'Enter' && currentLevel === 20 && isPlaying) {
+                interactWithAltar();
+            }
+            // Passer au niveau suivant avec Entrée quand l'écran de victoire est affiché
+            if (event.code === 'Enter' && document.getElementById('winScreen').style.display === 'flex') {
+                nextLevel();
+            }
+        }
+
+        function onKeyUp(event) {
+            if (keys.hasOwnProperty(event.code)) {
+                keys[event.code] = false;
+            }
+        }
+
+        function onMouseClick(event) {
+            // Ignorer les clics sur les boutons UI
+            if (event.target.tagName === 'BUTTON') return;
+
+            if (event.button === 0 && canPressButton && isPlaying) {
+                winLevel();
+            }
+            // Interagir avec les autels au niveau 20
+            if (event.button === 0 && currentLevel === 20 && isPlaying) {
+                interactWithAltar();
+            }
+        }
+
+        function updatePlayer() {
+            if (!isPlaying) return;
+
+            // Calculate camera-relative movement (utilise l'angle libre de la caméra)
+            const angle = cameraYaw;
+            let moveX = 0;
+            let moveZ = 0;
+
+            if (keys.ArrowUp || keys.KeyW) {
+                moveX -= Math.sin(angle);
+                moveZ -= Math.cos(angle);
+            }
+            if (keys.ArrowDown || keys.KeyS) {
+                moveX += Math.sin(angle);
+                moveZ += Math.cos(angle);
+            }
+            if (keys.ArrowLeft || keys.KeyA) {
+                moveX -= Math.cos(angle);
+                moveZ += Math.sin(angle);
+            }
+            if (keys.ArrowRight || keys.KeyD) {
+                moveX += Math.cos(angle);
+                moveZ -= Math.sin(angle);
+            }
+
+            // Normalize and apply speed
+            if (moveX !== 0 || moveZ !== 0) {
+                const length = Math.sqrt(moveX * moveX + moveZ * moveZ);
+                moveX = (moveX / length) * playerSpeed;
+                moveZ = (moveZ / length) * playerSpeed;
+
+                // Rotate player to face movement direction
+                player.rotation.y = Math.atan2(moveX, moveZ);
+            }
+
+            // Apply movement
+            player.position.x += moveX;
+            player.position.z += moveZ;
+
+            // Apply gravity
+            playerVelocity.y -= gravity;
+            player.position.y += playerVelocity.y;
+
+            // Ground collision
+            let groundLevel = 0;
+
+            // Check platform collisions (for level 5)
+            if (currentLevel === 5) {
+                let onPlatform = false;
+                platforms.forEach(platform => {
+                    if (player.position.x >= platform.minX && player.position.x <= platform.maxX &&
+                        player.position.z >= platform.minZ && player.position.z <= platform.maxZ) {
+                        if (player.position.y <= platform.y && player.position.y > platform.y - 2) {
+                            groundLevel = platform.y;
+                            onPlatform = true;
+                        }
+                    }
+                });
+
+                // If not on any platform and below main ground
+                if (!onPlatform && player.position.y < -10) {
+                    // Reset to start
+                    player.position.set(0, 1, 0);
+                    playerVelocity.y = 0;
+                }
+            }
+
+            if (player.position.y <= groundLevel) {
+                player.position.y = groundLevel;
+                playerVelocity.y = 0;
+                isGrounded = true;
+            }
+
+            // Invisible barriers (keep player in bounds)
+            const bounds = currentLevel === 5 ? 50 : 45;
+            player.position.x = Math.max(-bounds, Math.min(bounds, player.position.x));
+            player.position.z = Math.max(-bounds, Math.min(bounds, player.position.z));
+        }
+
+        function updateCamera() {
+            if (isFirstPerson) {
+                // Vue première personne - caméra dans la tête du personnage
+                const targetX = player.position.x;
+                const targetY = player.position.y + 2.5; // Hauteur des yeux
+                const targetZ = player.position.z;
+
+                camera.position.x += (targetX - camera.position.x) * 0.3;
+                camera.position.y += (targetY - camera.position.y) * 0.3;
+                camera.position.z += (targetZ - camera.position.z) * 0.3;
+
+                // Regarder dans la direction de la caméra
+                const lookX = player.position.x - Math.sin(cameraYaw) * 10;
+                const lookY = player.position.y + 2.5 - cameraPitch * 5;
+                const lookZ = player.position.z - Math.cos(cameraYaw) * 10;
+                camera.lookAt(lookX, lookY, lookZ);
+            } else {
+                // Vue troisième personne - caméra derrière le personnage
+                const horizontalDist = cameraDistance * Math.cos(cameraPitch);
+                const verticalDist = cameraDistance * Math.sin(cameraPitch);
+
+                const targetX = player.position.x + Math.sin(cameraYaw) * horizontalDist;
+                const targetZ = player.position.z + Math.cos(cameraYaw) * horizontalDist;
+                const targetY = player.position.y + cameraHeight + verticalDist;
+
+                camera.position.x += (targetX - camera.position.x) * 0.1;
+                camera.position.y += (targetY - camera.position.y) * 0.1;
+                camera.position.z += (targetZ - camera.position.z) * 0.1;
+
+                camera.lookAt(player.position.x, player.position.y + 1.5, player.position.z);
+            }
+        }
+
+        function checkButtonProximity() {
+            if (!redButton || !isPlaying) return;
+
+            // Au niveau 20, ne pas vérifier si le bouton est encore caché
+            if (currentLevel === 20 && level20ButtonHidden) {
+                canPressButton = false;
+                return;
+            }
+
+            const dx = player.position.x - redButton.position.x;
+            const dy = player.position.y - redButton.position.y;
+            const dz = player.position.z - redButton.position.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+            if (distance < 3) {
+                canPressButton = true;
+                document.getElementById('buttonIndicator').style.display = 'block';
+                document.getElementById('crosshair').classList.add('active');
+
+                // Animate button glow
+                const pulse = 1 + Math.sin(Date.now() * 0.01) * 0.1;
+                redButton.scale.set(pulse, pulse, pulse);
+            } else {
+                canPressButton = false;
+                document.getElementById('buttonIndicator').style.display = 'none';
+                document.getElementById('crosshair').classList.remove('active');
+                redButton.scale.set(1, 1, 1);
+            }
+        }
+
+        function checkAltarProximity() {
+            if (currentLevel !== 20 || !isPlaying) {
+                document.getElementById('altarIndicator').style.display = 'none';
+                return;
+            }
+
+            let nearAltar = false;
+            interactableObjects.forEach(obj => {
+                if (obj.activated) return;
+                const dx = player.position.x - obj.altar.position.x;
+                const dz = player.position.z - obj.altar.position.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                if (distance < 4) nearAltar = true;
+            });
+
+            document.getElementById('altarIndicator').style.display = nearAltar ? 'block' : 'none';
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            updatePlayer();
+            updateWalkAnimation();
+            updateCamera();
+            checkButtonProximity();
+            checkAltarProximity();
+
+            renderer.render(scene, camera);
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+
+</html>
