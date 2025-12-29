@@ -786,8 +786,12 @@
     <div id="timer">00:00</div>
     <div id="crosshair"></div>
     <div id="buttonIndicator">🔴 CLIC GAUCHE ou ENTRÉE pour appuyer !</div>
-    <div id="keyIndicator" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:15px 30px;font-family:'Orbitron',sans-serif;font-size:1.2rem;background:rgba(255,215,0,0.9);color:#333;border-radius:10px;display:none;z-index:60;animation:bounce 0.5s ease-in-out infinite;">🔑 CLIC ou ENTRÉE pour prendre la clé !</div>
-    <div id="doorIndicator" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:15px 30px;font-family:'Orbitron',sans-serif;font-size:1.2rem;background:rgba(139,69,19,0.9);color:white;border-radius:10px;display:none;z-index:60;animation:bounce 0.5s ease-in-out infinite;">🚪 CLIC ou ENTRÉE pour ouvrir la porte !</div>
+    <div id="keyIndicator"
+        style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:15px 30px;font-family:'Orbitron',sans-serif;font-size:1.2rem;background:rgba(255,215,0,0.9);color:#333;border-radius:10px;display:none;z-index:60;animation:bounce 0.5s ease-in-out infinite;">
+        🔑 CLIC ou ENTRÉE pour prendre la clé !</div>
+    <div id="doorIndicator"
+        style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:15px 30px;font-family:'Orbitron',sans-serif;font-size:1.2rem;background:rgba(139,69,19,0.9);color:white;border-radius:10px;display:none;z-index:60;animation:bounce 0.5s ease-in-out infinite;">
+        🚪 CLIC ou ENTRÉE pour ouvrir la porte !</div>
     <button id="cameraBtn">📷 VUE 3ÈME PERSONNE</button>
     <button id="menuBtn">MENU</button>
 
@@ -2113,7 +2117,7 @@
             level20Key.rotation.z = Math.PI / 4;
             scene.add(level20Key);
             levelObjects.push(level20Key);
-            
+
             // Lumière pour la clé
             const keyLight = new THREE.PointLight(0xffd700, 0.5, 8);
             keyLight.position.set(-30, 2, 25);
@@ -2197,7 +2201,7 @@
                 const dx = player.position.x - level20Key.position.x;
                 const dz = player.position.z - level20Key.position.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
-                
+
                 if (distance < 3) {
                     hasKey = true;
                     level20Key.visible = false;
@@ -2213,7 +2217,7 @@
                 const dx = player.position.x - level20Door.position.x;
                 const dz = player.position.z - level20Door.position.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
-                
+
                 if (distance < 4) {
                     doorOpened = true;
                     // Animation d'ouverture de porte
@@ -2334,7 +2338,7 @@
                 document.getElementById('winScreen').style.display = 'none';
                 document.getElementById('buttonIndicator').style.display = 'none';
                 document.getElementById('keyIndicator').style.display = 'none';
-            document.getElementById('doorIndicator').style.display = 'none';
+                document.getElementById('doorIndicator').style.display = 'none';
 
                 loadLevel(currentLevel);
 
