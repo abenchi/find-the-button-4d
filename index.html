@@ -786,9 +786,8 @@
     <div id="timer">00:00</div>
     <div id="crosshair"></div>
     <div id="buttonIndicator">🔴 CLIC GAUCHE ou ENTRÉE pour appuyer !</div>
-    <div id="altarIndicator"
-        style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:15px 30px;font-family:'Orbitron',sans-serif;font-size:1.2rem;background:rgba(156,39,176,0.9);color:white;border-radius:10px;display:none;z-index:60;animation:bounce 0.5s ease-in-out infinite;">
-        ✨ CLIC ou ENTRÉE pour activer l'autel !</div>
+    <div id="keyIndicator" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:15px 30px;font-family:'Orbitron',sans-serif;font-size:1.2rem;background:rgba(255,215,0,0.9);color:#333;border-radius:10px;display:none;z-index:60;animation:bounce 0.5s ease-in-out infinite;">🔑 CLIC ou ENTRÉE pour prendre la clé !</div>
+    <div id="doorIndicator" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:15px 30px;font-family:'Orbitron',sans-serif;font-size:1.2rem;background:rgba(139,69,19,0.9);color:white;border-radius:10px;display:none;z-index:60;animation:bounce 0.5s ease-in-out infinite;">🚪 CLIC ou ENTRÉE pour ouvrir la porte !</div>
     <button id="cameraBtn">📷 VUE 3ÈME PERSONNE</button>
     <button id="menuBtn">MENU</button>
 
@@ -848,9 +847,12 @@
         const gravity = 0.015;
         let isGrounded = true;
 
-        // Variables pour le niveau 20 (interactions)
-        let interactableObjects = [];
-        let interactionsCompleted = 0;
+        // Variables pour le niveau 20 (clé et porte)
+        let level20Key = null;
+        let level20Door = null;
+        let level20Rock = null;
+        let hasKey = false;
+        let doorOpened = false;
         let level20ButtonHidden = true;
 
         // Level configurations - 20 niveaux
@@ -874,7 +876,7 @@
             17: { name: "Volcan Actif", hint: "Près de la lave bouillonnante...", groundColor: 0x4a2c2a, skyColor: 0xd32f2f, fogColor: 0xd32f2f, fogDensity: 0.03, buttonPos: { x: -40, y: 0.5, z: -40 } },
             18: { name: "Labyrinthe de Cristaux", hint: "Parmi les cristaux brillants...", groundColor: 0x1a1a2e, skyColor: 0x0f0f1a, fogColor: 0x0f0f1a, fogDensity: 0.025, buttonPos: { x: -35, y: 0.5, z: 32 } },
             19: { name: "Dimension Sombre", hint: "Dans les ténèbres absolues...", groundColor: 0x0a0a0a, skyColor: 0x000000, fogColor: 0x0a0a0a, fogDensity: 0.06, buttonPos: { x: 38, y: 0.5, z: 38 } },
-            20: { name: "Sanctuaire Final", hint: "Active les 2 autels pour révéler le bouton ! ⚡", groundColor: 0x1a1a2e, skyColor: 0x1a0a2e, fogColor: 0x1a0a2e, fogDensity: 0.02, buttonPos: { x: 0, y: 0.5, z: -40 }, special: true }
+            20: { name: "Sanctuaire Final", hint: "Trouve la clé cachée... 🔑", groundColor: 0x1a1a2e, skyColor: 0x1a0a2e, fogColor: 0x1a0a2e, fogDensity: 0.02, buttonPos: { x: 35, y: 0.5, z: -35 }, special: true }
         };
 
         // Initialize Three.js
@@ -1109,8 +1111,11 @@
             levelObjects.forEach(obj => scene.remove(obj));
             levelObjects = [];
             platforms = [];
-            interactableObjects = [];
-            interactionsCompleted = 0;
+            level20Key = null;
+            level20Door = null;
+            level20Rock = null;
+            hasKey = false;
+            doorOpened = false;
             level20ButtonHidden = (levelNum === 20);
             if (redButton) scene.remove(redButton);
 
@@ -2071,7 +2076,7 @@
             }
         }
 
-        // === NIVEAU 20: Sanctuaire Final (SPÉCIAL) ===
+        // === NIVEAU 20: Sanctuaire Final (SPÉCIAL - Clé + Porte) ===
         function createFinalLevel() {
             // Structure centrale majestueuse
             const platform = new THREE.Mesh(new THREE.CylinderGeometry(15, 18, 2, 32), new THREE.MeshLambertMaterial({ color: 0x4a148c }));
@@ -2088,36 +2093,74 @@
                 levelObjects.push(col);
             }
 
-            // Créer les 2 AUTELS interactifs
-            const createAltar = (x, z, color, index) => {
-                const altar = new THREE.Group();
-                const base = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 3), new THREE.MeshLambertMaterial({ color: 0x37474f }));
-                base.position.y = 0.5;
-                altar.add(base);
-                const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(1), new THREE.MeshLambertMaterial({ color: color, emissive: color, emissiveIntensity: 0.3 }));
-                crystal.position.y = 2;
-                crystal.userData.isInteractable = true;
-                crystal.userData.altarIndex = index;
-                crystal.userData.activated = false;
-                altar.add(crystal);
-                altar.position.set(x, 0, z);
-                altar.userData.crystal = crystal;
-                scene.add(altar);
-                levelObjects.push(altar);
-                interactableObjects.push({ altar, crystal, activated: false, index });
+            // === CLÉ CACHÉE ===
+            level20Key = new THREE.Group();
+            // Corps de la clé
+            const keyHandle = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.1, 8, 16), new THREE.MeshLambertMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.3 }));
+            keyHandle.rotation.x = Math.PI / 2;
+            level20Key.add(keyHandle);
+            const keyShaft = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1, 0.1), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+            keyShaft.position.y = -0.5;
+            level20Key.add(keyShaft);
+            const keyTooth1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.1, 0.1), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+            keyTooth1.position.set(0.1, -0.9, 0);
+            level20Key.add(keyTooth1);
+            const keyTooth2 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.1), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+            keyTooth2.position.set(0.05, -0.75, 0);
+            level20Key.add(keyTooth2);
+            // Position cachée de la clé (derrière des rochers au sud-ouest)
+            level20Key.position.set(-30, 1.5, 25);
+            level20Key.rotation.z = Math.PI / 4;
+            scene.add(level20Key);
+            levelObjects.push(level20Key);
+            
+            // Lumière pour la clé
+            const keyLight = new THREE.PointLight(0xffd700, 0.5, 8);
+            keyLight.position.set(-30, 2, 25);
+            scene.add(keyLight);
+            levelObjects.push(keyLight);
 
-                // Lumière
-                const light = new THREE.PointLight(color, 0.3, 15);
-                light.position.set(x, 3, z);
-                scene.add(light);
-                levelObjects.push(light);
-            };
+            // Rochers cachant la clé
+            for (let i = 0; i < 5; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5 + Math.random()), new THREE.MeshLambertMaterial({ color: 0x311b92 }));
+                rock.position.set(-30 + (Math.random() - 0.5) * 6, 1, 25 + (Math.random() - 0.5) * 6);
+                scene.add(rock);
+                levelObjects.push(rock);
+            }
 
-            createAltar(-25, 0, 0x00bcd4, 0);  // Autel cyan à gauche
-            createAltar(25, 0, 0xff9800, 1);   // Autel orange à droite
+            // === GROSSE PIERRE AVEC PORTE CACHÉE ===
+            level20Rock = new THREE.Group();
+            // La grosse pierre
+            const bigRock = new THREE.Mesh(new THREE.DodecahedronGeometry(5), new THREE.MeshLambertMaterial({ color: 0x4a148c }));
+            bigRock.position.y = 3;
+            bigRock.scale.set(1.5, 1, 1.5);
+            level20Rock.add(bigRock);
+            level20Rock.position.set(35, 0, -35);
+            scene.add(level20Rock);
+            levelObjects.push(level20Rock);
+
+            // === PORTE CACHÉE (dans la pierre) ===
+            level20Door = new THREE.Group();
+            // Cadre de la porte
+            const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(3, 5, 0.5), new THREE.MeshLambertMaterial({ color: 0x8b4513 }));
+            doorFrame.position.y = 2.5;
+            level20Door.add(doorFrame);
+            // Serrure
+            const lock = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.3, 16), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+            lock.rotation.x = Math.PI / 2;
+            lock.position.set(0.8, 2, 0.3);
+            level20Door.add(lock);
+            // Poignée
+            const handle = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+            handle.position.set(0.8, 2.5, 0.3);
+            level20Door.add(handle);
+            level20Door.position.set(35, 0, -30);
+            level20Door.visible = false; // Cachée au début
+            scene.add(level20Door);
+            levelObjects.push(level20Door);
 
             // Décoration: rochers mystiques
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 25; i++) {
                 const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random()), new THREE.MeshLambertMaterial({ color: 0x311b92 }));
                 rock.position.set((Math.random() - 0.5) * 70, 0.5, (Math.random() - 0.5) * 70);
                 scene.add(rock);
@@ -2145,33 +2188,44 @@
             levelObjects.push(ambientPurple);
         }
 
-        // Fonction pour interagir avec les autels (niveau 20)
-        function interactWithAltar() {
+        // Fonction pour interagir avec clé/porte (niveau 20)
+        function interactLevel20() {
             if (currentLevel !== 20 || !isPlaying) return;
 
-            interactableObjects.forEach(obj => {
-                if (obj.activated) return;
-
-                const dx = player.position.x - obj.altar.position.x;
-                const dz = player.position.z - obj.altar.position.z;
+            // 1. Prendre la clé
+            if (level20Key && level20Key.visible && !hasKey) {
+                const dx = player.position.x - level20Key.position.x;
+                const dz = player.position.z - level20Key.position.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
-
-                if (distance < 4) {
-                    obj.activated = true;
-                    obj.crystal.material.emissiveIntensity = 1;
-                    obj.crystal.scale.set(1.5, 1.5, 1.5);
-                    interactionsCompleted++;
-
-                    // Si les 2 autels sont activés, révéler le bouton
-                    if (interactionsCompleted >= 2) {
-                        level20ButtonHidden = false;
-                        redButton.visible = true;
-                        document.getElementById('hintText').textContent = "Le bouton est apparu au nord ! 🔴";
-                    } else {
-                        document.getElementById('hintText').textContent = "Autel activé ! Il en reste 1...";
-                    }
+                
+                if (distance < 3) {
+                    hasKey = true;
+                    level20Key.visible = false;
+                    document.getElementById('hintText').textContent = "🔑 Clé récupérée ! Cherche la porte cachée dans une pierre...";
+                    // Révéler la porte
+                    level20Door.visible = true;
+                    return;
                 }
-            });
+            }
+
+            // 2. Ouvrir la porte avec la clé
+            if (level20Door && level20Door.visible && hasKey && !doorOpened) {
+                const dx = player.position.x - level20Door.position.x;
+                const dz = player.position.z - level20Door.position.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                
+                if (distance < 4) {
+                    doorOpened = true;
+                    // Animation d'ouverture de porte
+                    level20Door.rotation.y = -Math.PI / 2;
+                    level20Door.position.x += 1.5;
+                    // Cacher la grosse pierre, révéler le bouton
+                    level20Rock.visible = false;
+                    level20ButtonHidden = false;
+                    redButton.visible = true;
+                    document.getElementById('hintText').textContent = "🚪 Porte ouverte ! Le bouton est révélé ! 🔴";
+                }
+            }
         }
 
         function startGame() {
@@ -2253,7 +2307,8 @@
             document.getElementById('crosshair').style.display = 'none';
             document.getElementById('timer').style.display = 'none';
             document.getElementById('buttonIndicator').style.display = 'none';
-            document.getElementById('altarIndicator').style.display = 'none';
+            document.getElementById('keyIndicator').style.display = 'none';
+            document.getElementById('doorIndicator').style.display = 'none';
 
             isPlaying = false;
             if (timerInterval) clearInterval(timerInterval);
@@ -2278,7 +2333,8 @@
                 // Cacher le winScreen AVANT de commencer
                 document.getElementById('winScreen').style.display = 'none';
                 document.getElementById('buttonIndicator').style.display = 'none';
-                document.getElementById('altarIndicator').style.display = 'none';
+                document.getElementById('keyIndicator').style.display = 'none';
+            document.getElementById('doorIndicator').style.display = 'none';
 
                 loadLevel(currentLevel);
 
@@ -2328,9 +2384,9 @@
             if (event.code === 'Enter' && canPressButton && isPlaying) {
                 winLevel();
             }
-            // Interagir avec les autels au niveau 20
+            // Interagir avec clé/porte au niveau 20
             if (event.code === 'Enter' && currentLevel === 20 && isPlaying) {
-                interactWithAltar();
+                interactLevel20();
             }
             // Passer au niveau suivant avec Entrée quand l'écran de victoire est affiché
             if (event.code === 'Enter' && document.getElementById('winScreen').style.display === 'flex') {
@@ -2351,9 +2407,9 @@
             if (event.button === 0 && canPressButton && isPlaying) {
                 winLevel();
             }
-            // Interagir avec les autels au niveau 20
+            // Interagir avec clé/porte au niveau 20
             if (event.button === 0 && currentLevel === 20 && isPlaying) {
-                interactWithAltar();
+                interactLevel20();
             }
         }
 
@@ -2499,22 +2555,32 @@
             }
         }
 
-        function checkAltarProximity() {
+        function checkLevel20Proximity() {
             if (currentLevel !== 20 || !isPlaying) {
-                document.getElementById('altarIndicator').style.display = 'none';
+                document.getElementById('keyIndicator').style.display = 'none';
+                document.getElementById('doorIndicator').style.display = 'none';
                 return;
             }
 
-            let nearAltar = false;
-            interactableObjects.forEach(obj => {
-                if (obj.activated) return;
-                const dx = player.position.x - obj.altar.position.x;
-                const dz = player.position.z - obj.altar.position.z;
+            // Vérifier proximité de la clé
+            let nearKey = false;
+            if (level20Key && level20Key.visible && !hasKey) {
+                const dx = player.position.x - level20Key.position.x;
+                const dz = player.position.z - level20Key.position.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
-                if (distance < 4) nearAltar = true;
-            });
+                if (distance < 3) nearKey = true;
+            }
+            document.getElementById('keyIndicator').style.display = nearKey ? 'block' : 'none';
 
-            document.getElementById('altarIndicator').style.display = nearAltar ? 'block' : 'none';
+            // Vérifier proximité de la porte
+            let nearDoor = false;
+            if (level20Door && level20Door.visible && hasKey && !doorOpened) {
+                const dx = player.position.x - level20Door.position.x;
+                const dz = player.position.z - level20Door.position.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                if (distance < 4) nearDoor = true;
+            }
+            document.getElementById('doorIndicator').style.display = nearDoor ? 'block' : 'none';
         }
 
         function animate() {
@@ -2524,7 +2590,7 @@
             updateWalkAnimation();
             updateCamera();
             checkButtonProximity();
-            checkAltarProximity();
+            checkLevel20Proximity();
 
             renderer.render(scene, camera);
         }
