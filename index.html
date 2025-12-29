@@ -1235,6 +1235,176 @@
             levelObjects.push(voidPlane);
         }
 
+        // Fonction pour créer des faux groupements d'objets (pour tromper le joueur)
+        function createFakeHidingSpots(levelNum) {
+            // Nombre de faux groupements selon la difficulté
+            const numFakeSpots = Math.min(5 + Math.floor(levelNum / 3), 12);
+
+            // Types de groupements possibles
+            const spotTypes = ['bushCluster', 'rockCluster', 'bigRock', 'treeCluster', 'mixedCluster'];
+
+            // Positions aléatoires pour les faux groupements (éviter le centre où le joueur spawn)
+            const positions = [];
+            for (let i = 0; i < numFakeSpots; i++) {
+                let x, z;
+                do {
+                    x = (Math.random() - 0.5) * 80;
+                    z = (Math.random() - 0.5) * 80;
+                } while (Math.abs(x) < 10 && Math.abs(z) < 10); // Éviter le spawn
+                positions.push({ x, z });
+            }
+
+            positions.forEach((pos, index) => {
+                const spotType = spotTypes[Math.floor(Math.random() * spotTypes.length)];
+
+                switch (spotType) {
+                    case 'bushCluster':
+                        // Groupe de buissons denses
+                        for (let i = 0; i < 6 + Math.floor(Math.random() * 5); i++) {
+                            const bush = new THREE.Mesh(
+                                new THREE.SphereGeometry(1 + Math.random() * 0.8, 8, 8),
+                                new THREE.MeshLambertMaterial({ color: 0x228B22 })
+                            );
+                            bush.position.set(
+                                pos.x + (Math.random() - 0.5) * 6,
+                                0.8 + Math.random() * 0.4,
+                                pos.z + (Math.random() - 0.5) * 6
+                            );
+                            bush.castShadow = true;
+                            scene.add(bush);
+                            levelObjects.push(bush);
+                        }
+                        break;
+
+                    case 'rockCluster':
+                        // Groupe de rochers
+                        for (let i = 0; i < 5 + Math.floor(Math.random() * 4); i++) {
+                            const rock = new THREE.Mesh(
+                                new THREE.DodecahedronGeometry(1 + Math.random() * 1.5),
+                                new THREE.MeshLambertMaterial({ color: 0x696969 })
+                            );
+                            rock.position.set(
+                                pos.x + (Math.random() - 0.5) * 7,
+                                0.5 + Math.random() * 0.5,
+                                pos.z + (Math.random() - 0.5) * 7
+                            );
+                            rock.rotation.set(Math.random(), Math.random(), Math.random());
+                            rock.castShadow = true;
+                            scene.add(rock);
+                            levelObjects.push(rock);
+                        }
+                        break;
+
+                    case 'bigRock':
+                        // Une grosse pierre seule
+                        const bigRock = new THREE.Mesh(
+                            new THREE.DodecahedronGeometry(3 + Math.random() * 2),
+                            new THREE.MeshLambertMaterial({ color: 0x5a5a5a })
+                        );
+                        bigRock.position.set(pos.x, 2 + Math.random(), pos.z);
+                        bigRock.scale.set(1 + Math.random() * 0.5, 0.7 + Math.random() * 0.3, 1 + Math.random() * 0.5);
+                        bigRock.rotation.y = Math.random() * Math.PI;
+                        bigRock.castShadow = true;
+                        scene.add(bigRock);
+                        levelObjects.push(bigRock);
+                        // Quelques petits rochers autour
+                        for (let i = 0; i < 3; i++) {
+                            const smallRock = new THREE.Mesh(
+                                new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.5),
+                                new THREE.MeshLambertMaterial({ color: 0x696969 })
+                            );
+                            smallRock.position.set(
+                                pos.x + (Math.random() - 0.5) * 6,
+                                0.3,
+                                pos.z + (Math.random() - 0.5) * 6
+                            );
+                            scene.add(smallRock);
+                            levelObjects.push(smallRock);
+                        }
+                        break;
+
+                    case 'treeCluster':
+                        // Groupe d'arbres serrés
+                        for (let i = 0; i < 4 + Math.floor(Math.random() * 3); i++) {
+                            const tree = new THREE.Group();
+                            const trunkHeight = 2 + Math.random() * 2;
+                            const trunk = new THREE.Mesh(
+                                new THREE.CylinderGeometry(0.2, 0.4, trunkHeight, 8),
+                                new THREE.MeshLambertMaterial({ color: 0x8B4513 })
+                            );
+                            trunk.position.y = trunkHeight / 2;
+                            tree.add(trunk);
+
+                            const leaves = new THREE.Mesh(
+                                new THREE.SphereGeometry(1.5 + Math.random(), 8, 8),
+                                new THREE.MeshLambertMaterial({ color: 0x228B22 })
+                            );
+                            leaves.position.y = trunkHeight + 1;
+                            tree.add(leaves);
+
+                            tree.position.set(
+                                pos.x + (Math.random() - 0.5) * 5,
+                                0,
+                                pos.z + (Math.random() - 0.5) * 5
+                            );
+                            tree.castShadow = true;
+                            scene.add(tree);
+                            levelObjects.push(tree);
+                        }
+                        break;
+
+                    case 'mixedCluster':
+                        // Mélange de buissons, rochers et petits arbres
+                        // Buissons
+                        for (let i = 0; i < 3; i++) {
+                            const bush = new THREE.Mesh(
+                                new THREE.SphereGeometry(0.8 + Math.random() * 0.5, 8, 8),
+                                new THREE.MeshLambertMaterial({ color: 0x2d5a27 })
+                            );
+                            bush.position.set(
+                                pos.x + (Math.random() - 0.5) * 5,
+                                0.6,
+                                pos.z + (Math.random() - 0.5) * 5
+                            );
+                            scene.add(bush);
+                            levelObjects.push(bush);
+                        }
+                        // Rochers
+                        for (let i = 0; i < 2; i++) {
+                            const rock = new THREE.Mesh(
+                                new THREE.DodecahedronGeometry(1 + Math.random()),
+                                new THREE.MeshLambertMaterial({ color: 0x696969 })
+                            );
+                            rock.position.set(
+                                pos.x + (Math.random() - 0.5) * 6,
+                                0.5,
+                                pos.z + (Math.random() - 0.5) * 6
+                            );
+                            scene.add(rock);
+                            levelObjects.push(rock);
+                        }
+                        // Un arbre
+                        const mixTree = new THREE.Group();
+                        const mixTrunk = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.3, 0.5, 3, 8),
+                            new THREE.MeshLambertMaterial({ color: 0x8B4513 })
+                        );
+                        mixTrunk.position.y = 1.5;
+                        mixTree.add(mixTrunk);
+                        const mixLeaves = new THREE.Mesh(
+                            new THREE.ConeGeometry(2, 3, 8),
+                            new THREE.MeshLambertMaterial({ color: 0x228B22 })
+                        );
+                        mixLeaves.position.y = 4;
+                        mixTree.add(mixLeaves);
+                        mixTree.position.set(pos.x, 0, pos.z);
+                        scene.add(mixTree);
+                        levelObjects.push(mixTree);
+                        break;
+                }
+            });
+        }
+
         function loadLevel(levelNum) {
             // Clear previous level
             levelObjects.forEach(obj => scene.remove(obj));
@@ -1265,6 +1435,11 @@
 
             // === ÎLES DISTANTES (décoration sur les bords) ===
             createDistantIslands(config.groundColor, config.skyColor);
+
+            // === FAUX GROUPEMENTS D'OBJETS (pour tromper le joueur) - sauf niveau 20 ===
+            if (levelNum !== 20) {
+                createFakeHidingSpots(levelNum);
+            }
 
             // Create level-specific objects
             switch (levelNum) {
@@ -1826,27 +2001,90 @@
 
         // === NIVEAU 4: Prairie Verdoyante ===
         function createMeadowLevel() {
-            // Hautes herbes
             const grassMaterial = new THREE.MeshLambertMaterial({ color: 0x7dcea0 });
-            for (let i = 0; i < 200; i++) {
-                const grass = new THREE.Mesh(new THREE.ConeGeometry(0.1, 1 + Math.random(), 4), grassMaterial);
-                grass.position.set((Math.random() - 0.5) * 80, 0.5, (Math.random() - 0.5) * 80);
+            const darkGrassMaterial = new THREE.MeshLambertMaterial({ color: 0x5daa7a });
+            const lightGrassMaterial = new THREE.MeshLambertMaterial({ color: 0x98d9a0 });
+
+            // === 10 000 BRINS D'HERBE AU TOTAL ===
+
+            // Herbes moyennes-hautes partout (3500)
+            for (let i = 0; i < 3500; i++) {
+                const grass = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.1, 1.2 + Math.random() * 0.8, 4),
+                    lightGrassMaterial
+                );
+                grass.position.set((Math.random() - 0.5) * 95, 0.7, (Math.random() - 0.5) * 95);
                 scene.add(grass);
                 levelObjects.push(grass);
             }
-            // Fleurs dispersées
-            for (let i = 0; i < 50; i++) {
-                const flower = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 6), new THREE.MeshLambertMaterial({ color: [0xf1c40f, 0xe74c3c, 0x9b59b6][Math.floor(Math.random() * 3)] }));
-                flower.position.set((Math.random() - 0.5) * 70, 0.8, (Math.random() - 0.5) * 70);
+
+            // Herbes hautes partout (3000)
+            for (let i = 0; i < 3000; i++) {
+                const grass = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.12, 1.5 + Math.random() * 1, 4),
+                    grassMaterial
+                );
+                grass.position.set((Math.random() - 0.5) * 95, 0.9, (Math.random() - 0.5) * 95);
+                scene.add(grass);
+                levelObjects.push(grass);
+            }
+
+            // Herbes très hautes partout (2500)
+            for (let i = 0; i < 2500; i++) {
+                const grass = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.14, 2 + Math.random() * 1, 4),
+                    darkGrassMaterial
+                );
+                grass.position.set((Math.random() - 0.5) * 92, 1.1, (Math.random() - 0.5) * 92);
+                scene.add(grass);
+                levelObjects.push(grass);
+            }
+
+            // ZONES EXTRA DENSES d'herbes géantes (fausses cachettes + vraie) (~1000)
+            const tallGrassZones = [
+                { x: -25, z: -20 },
+                { x: 15, z: 25 },
+                { x: -30, z: 30 },
+                { x: 35, z: 10 },
+                { x: -10, z: -35 },
+                { x: 20, z: -30 },
+                { x: -35, z: 5 },
+                { x: 5, z: 38 },
+                { x: -20, z: 15 },
+                { x: 38, z: -25 },
+                { x: -38, z: -30 },
+                { x: 25, z: 35 },
+                { x: -15, z: 38 },
+                { x: 40, z: 30 },
+                { x: -40, z: -15 },
+                { x: 30, z: -15 }  // La vraie cachette du bouton
+            ];
+
+            tallGrassZones.forEach(zone => {
+                for (let i = 0; i < 60 + Math.floor(Math.random() * 30); i++) {
+                    const tallGrass = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.16, 2.5 + Math.random() * 1, 4),
+                        [grassMaterial, darkGrassMaterial, lightGrassMaterial][Math.floor(Math.random() * 3)]
+                    );
+                    tallGrass.position.set(
+                        zone.x + (Math.random() - 0.5) * 8,
+                        1.3 + Math.random() * 0.3,
+                        zone.z + (Math.random() - 0.5) * 8
+                    );
+                    scene.add(tallGrass);
+                    levelObjects.push(tallGrass);
+                }
+            });
+
+            // Fleurs dispersées partout
+            for (let i = 0; i < 200; i++) {
+                const flower = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.12 + Math.random() * 0.1, 6, 6),
+                    new THREE.MeshLambertMaterial({ color: [0xf1c40f, 0xe74c3c, 0x9b59b6, 0xff69b4, 0xffffff, 0x3498db][Math.floor(Math.random() * 6)] })
+                );
+                flower.position.set((Math.random() - 0.5) * 85, 1 + Math.random() * 0.5, (Math.random() - 0.5) * 85);
                 scene.add(flower);
                 levelObjects.push(flower);
-            }
-            // Zone dense cachant le bouton
-            for (let i = 0; i < 30; i++) {
-                const tallGrass = new THREE.Mesh(new THREE.ConeGeometry(0.15, 2, 4), grassMaterial);
-                tallGrass.position.set(30 + (Math.random() - 0.5) * 5, 1, -15 + (Math.random() - 0.5) * 5);
-                scene.add(tallGrass);
-                levelObjects.push(tallGrass);
             }
         }
 
