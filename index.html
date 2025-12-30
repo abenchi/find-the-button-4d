@@ -1237,175 +1237,299 @@
             levelObjects.push(voidPlane);
         }
 
-        // Fonction pour créer des faux groupements d'objets (pour tromper le joueur)
+        // Fonction pour créer des faux groupements d'objets THÉMATIQUES (pour tromper le joueur)
         function createFakeHidingSpots(levelNum) {
-            // Nombre de faux groupements selon la difficulté
             const numFakeSpots = Math.min(5 + Math.floor(levelNum / 3), 12);
 
-            // Types de groupements possibles
-            const spotTypes = ['bushCluster', 'rockCluster', 'bigRock', 'treeCluster', 'mixedCluster'];
-
-            // Positions aléatoires pour les faux groupements (éviter le centre où le joueur spawn)
+            // Positions aléatoires (éviter le centre)
             const positions = [];
             for (let i = 0; i < numFakeSpots; i++) {
                 let x, z;
                 do {
                     x = (Math.random() - 0.5) * 80;
                     z = (Math.random() - 0.5) * 80;
-                } while (Math.abs(x) < 10 && Math.abs(z) < 10); // Éviter le spawn
+                } while (Math.abs(x) < 10 && Math.abs(z) < 10);
                 positions.push({ x, z });
             }
 
-            positions.forEach((pos, index) => {
-                const spotType = spotTypes[Math.floor(Math.random() * spotTypes.length)];
-
-                switch (spotType) {
-                    case 'bushCluster':
-                        // Groupe de buissons denses avec collision
-                        for (let i = 0; i < 6 + Math.floor(Math.random() * 5); i++) {
-                            const radius = 1 + Math.random() * 0.8;
-                            const bx = pos.x + (Math.random() - 0.5) * 6;
-                            const bz = pos.z + (Math.random() - 0.5) * 6;
-                            const bush = new THREE.Mesh(
-                                new THREE.SphereGeometry(radius, 8, 8),
-                                new THREE.MeshLambertMaterial({ color: 0x228B22 })
-                            );
-                            bush.position.set(bx, 0.8 + Math.random() * 0.4, bz);
-                            bush.castShadow = true;
-                            scene.add(bush);
-                            levelObjects.push(bush);
-                            addSolidObject(bx, bz, radius);
-                        }
+            positions.forEach(pos => {
+                switch (levelNum) {
+                    case 1: // Jardin - buissons fleuris
+                        createFlowerBushCluster(pos.x, pos.z);
                         break;
-
-                    case 'rockCluster':
-                        // Groupe de rochers avec collision
-                        for (let i = 0; i < 5 + Math.floor(Math.random() * 4); i++) {
-                            const radius = 1 + Math.random() * 1.5;
-                            const rx = pos.x + (Math.random() - 0.5) * 7;
-                            const rz = pos.z + (Math.random() - 0.5) * 7;
-                            const rock = new THREE.Mesh(
-                                new THREE.DodecahedronGeometry(radius),
-                                new THREE.MeshLambertMaterial({ color: 0x696969 })
-                            );
-                            rock.position.set(rx, 0.5 + Math.random() * 0.5, rz);
-                            rock.rotation.set(Math.random(), Math.random(), Math.random());
-                            rock.castShadow = true;
-                            scene.add(rock);
-                            levelObjects.push(rock);
-                            addSolidObject(rx, rz, radius * 0.8);
-                        }
+                    case 2: // Forêt - arbres et buissons
+                    case 15: // Jungle - même chose
+                        createForestCluster(pos.x, pos.z);
                         break;
-
-                    case 'bigRock':
-                        // Une grosse pierre seule avec collision
-                        const bigRock = new THREE.Mesh(
-                            new THREE.DodecahedronGeometry(3 + Math.random() * 2),
-                            new THREE.MeshLambertMaterial({ color: 0x5a5a5a })
-                        );
-                        bigRock.position.set(pos.x, 2 + Math.random(), pos.z);
-                        bigRock.scale.set(1 + Math.random() * 0.5, 0.7 + Math.random() * 0.3, 1 + Math.random() * 0.5);
-                        bigRock.rotation.y = Math.random() * Math.PI;
-                        bigRock.castShadow = true;
-                        scene.add(bigRock);
-                        levelObjects.push(bigRock);
-                        addSolidObject(pos.x, pos.z, 4); // Grande collision
-                        // Quelques petits rochers autour avec collision
-                        for (let i = 0; i < 3; i++) {
-                            const sr = 0.5 + Math.random() * 0.5;
-                            const sx = pos.x + (Math.random() - 0.5) * 6;
-                            const sz = pos.z + (Math.random() - 0.5) * 6;
-                            const smallRock = new THREE.Mesh(
-                                new THREE.DodecahedronGeometry(sr),
-                                new THREE.MeshLambertMaterial({ color: 0x696969 })
-                            );
-                            smallRock.position.set(sx, 0.3, sz);
-                            scene.add(smallRock);
-                            levelObjects.push(smallRock);
-                            addSolidObject(sx, sz, sr * 0.8);
-                        }
+                    case 3: // Plage - palmiers et rochers
+                        createBeachCluster(pos.x, pos.z);
                         break;
-
-                    case 'treeCluster':
-                        // Groupe d'arbres serrés avec collision
-                        for (let i = 0; i < 4 + Math.floor(Math.random() * 3); i++) {
-                            const tx = pos.x + (Math.random() - 0.5) * 5;
-                            const tz = pos.z + (Math.random() - 0.5) * 5;
-                            const tree = new THREE.Group();
-                            const trunkHeight = 2 + Math.random() * 2;
-                            const trunk = new THREE.Mesh(
-                                new THREE.CylinderGeometry(0.2, 0.4, trunkHeight, 8),
-                                new THREE.MeshLambertMaterial({ color: 0x8B4513 })
-                            );
-                            trunk.position.y = trunkHeight / 2;
-                            tree.add(trunk);
-
-                            const leaves = new THREE.Mesh(
-                                new THREE.SphereGeometry(1.5 + Math.random(), 8, 8),
-                                new THREE.MeshLambertMaterial({ color: 0x228B22 })
-                            );
-                            leaves.position.y = trunkHeight + 1;
-                            tree.add(leaves);
-
-                            tree.position.set(tx, 0, tz);
-                            tree.castShadow = true;
-                            scene.add(tree);
-                            levelObjects.push(tree);
-                            addSolidObject(tx, tz, 0.4);
-                        }
+                    case 5: // Village - caisses et tonneaux
+                        createVillageCluster(pos.x, pos.z);
                         break;
-
-                    case 'mixedCluster':
-                        // Mélange de buissons, rochers et petits arbres avec collision
-                        // Buissons
-                        for (let i = 0; i < 3; i++) {
-                            const br = 0.8 + Math.random() * 0.5;
-                            const bx = pos.x + (Math.random() - 0.5) * 5;
-                            const bz = pos.z + (Math.random() - 0.5) * 5;
-                            const bush = new THREE.Mesh(
-                                new THREE.SphereGeometry(br, 8, 8),
-                                new THREE.MeshLambertMaterial({ color: 0x2d5a27 })
-                            );
-                            bush.position.set(bx, 0.6, bz);
-                            scene.add(bush);
-                            levelObjects.push(bush);
-                            addSolidObject(bx, bz, br);
-                        }
-                        // Rochers
-                        for (let i = 0; i < 2; i++) {
-                            const rr = 1 + Math.random();
-                            const rx = pos.x + (Math.random() - 0.5) * 6;
-                            const rz = pos.z + (Math.random() - 0.5) * 6;
-                            const rock = new THREE.Mesh(
-                                new THREE.DodecahedronGeometry(rr),
-                                new THREE.MeshLambertMaterial({ color: 0x696969 })
-                            );
-                            rock.position.set(rx, 0.5, rz);
-                            scene.add(rock);
-                            levelObjects.push(rock);
-                            addSolidObject(rx, rz, rr * 0.8);
-                        }
-                        // Un arbre avec collision
-                        const mixTree = new THREE.Group();
-                        const mixTrunk = new THREE.Mesh(
-                            new THREE.CylinderGeometry(0.3, 0.5, 3, 8),
-                            new THREE.MeshLambertMaterial({ color: 0x8B4513 })
-                        );
-                        mixTrunk.position.y = 1.5;
-                        mixTree.add(mixTrunk);
-                        const mixLeaves = new THREE.Mesh(
-                            new THREE.ConeGeometry(2, 3, 8),
-                            new THREE.MeshLambertMaterial({ color: 0x228B22 })
-                        );
-                        mixLeaves.position.y = 4;
-                        mixTree.add(mixLeaves);
-                        mixTree.position.set(pos.x, 0, pos.z);
-                        scene.add(mixTree);
-                        levelObjects.push(mixTree);
-                        addSolidObject(pos.x, pos.z, 0.5);
+                    case 6: // Marais - îlots et arbres morts
+                        createSwampCluster(pos.x, pos.z);
                         break;
+                    case 7: // Bambou - bambous seulement
+                        createBambooCluster(pos.x, pos.z);
+                        break;
+                    case 8: // Canyon - rochers et cactus
+                    case 9: // Désert - dunes et cactus
+                        createDesertCluster(pos.x, pos.z);
+                        break;
+                    case 10: // Cimetière - tombes
+                        createCemeteryCluster(pos.x, pos.z);
+                        break;
+                    case 11: // Ruines - piliers et blocs
+                    case 14: // Temple - colonnes et pierres
+                        createRuinsCluster(pos.x, pos.z);
+                        break;
+                    case 12: // Grotte - stalagmites et rochers
+                        createCaveCluster(pos.x, pos.z);
+                        break;
+                    case 13: // Ville fantôme - structures
+                        createGhostTownCluster(pos.x, pos.z);
+                        break;
+                    case 16: // Montagne - sapins et neige
+                        createSnowCluster(pos.x, pos.z);
+                        break;
+                    case 17: // Volcan - rochers volcaniques et lave
+                        createVolcanoCluster(pos.x, pos.z);
+                        break;
+                    case 18: // Cristaux - cristaux
+                        createCrystalCluster(pos.x, pos.z);
+                        break;
+                    case 19: // Dimension sombre - piliers noirs
+                        createDarkCluster(pos.x, pos.z);
+                        break;
+                    default:
+                        createRockCluster(pos.x, pos.z, 0x696969);
                 }
             });
+        }
+
+        // === FONCTIONS DE CRÉATION DE CLUSTERS THÉMATIQUES ===
+
+        function createFlowerBushCluster(x, z) {
+            // Buissons avec fleurs
+            for (let i = 0; i < 5; i++) {
+                const r = 1 + Math.random() * 0.5;
+                const bx = x + (Math.random() - 0.5) * 5;
+                const bz = z + (Math.random() - 0.5) * 5;
+                const bush = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 8), new THREE.MeshLambertMaterial({ color: 0x2ecc71 }));
+                bush.position.set(bx, r * 0.5, bz);
+                scene.add(bush); levelObjects.push(bush);
+                addSolidObject(bx, bz, r);
+            }
+        }
+
+        function createForestCluster(x, z) {
+            // Arbres
+            for (let i = 0; i < 3; i++) {
+                const tx = x + (Math.random() - 0.5) * 6;
+                const tz = z + (Math.random() - 0.5) * 6;
+                createTree(tx, tz, 0.8 + Math.random() * 0.4);
+            }
+        }
+
+        function createBeachCluster(x, z) {
+            // Palmiers et rochers de plage
+            for (let i = 0; i < 2; i++) {
+                const px = x + (Math.random() - 0.5) * 5;
+                const pz = z + (Math.random() - 0.5) * 5;
+                const palm = new THREE.Group();
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 4, 8), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
+                trunk.position.y = 2;
+                palm.add(trunk);
+                palm.position.set(px, 0, pz);
+                scene.add(palm); levelObjects.push(palm);
+                addSolidObject(px, pz, 0.4);
+            }
+            // Rochers de plage
+            for (let i = 0; i < 3; i++) {
+                const r = 0.5 + Math.random() * 0.5;
+                const rx = x + (Math.random() - 0.5) * 6;
+                const rz = z + (Math.random() - 0.5) * 6;
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(r), new THREE.MeshLambertMaterial({ color: 0xbdc3c7 }));
+                rock.position.set(rx, r * 0.3, rz);
+                scene.add(rock); levelObjects.push(rock);
+                addSolidObject(rx, rz, r * 0.8);
+            }
+        }
+
+        function createVillageCluster(x, z) {
+            // Tonneaux et caisses
+            for (let i = 0; i < 4; i++) {
+                const bx = x + (Math.random() - 0.5) * 5;
+                const bz = z + (Math.random() - 0.5) * 5;
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1.2, 16), new THREE.MeshLambertMaterial({ color: 0x8B4513 }));
+                barrel.position.set(bx, 0.6, bz);
+                scene.add(barrel); levelObjects.push(barrel);
+                addSolidObject(bx, bz, 0.5);
+            }
+        }
+
+        function createSwampCluster(x, z) {
+            // Arbres morts
+            for (let i = 0; i < 3; i++) {
+                const tx = x + (Math.random() - 0.5) * 5;
+                const tz = z + (Math.random() - 0.5) * 5;
+                const tree = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.4, 4, 6), new THREE.MeshLambertMaterial({ color: 0x4e342e }));
+                tree.position.set(tx, 2, tz);
+                tree.rotation.z = Math.random() * 0.3;
+                scene.add(tree); levelObjects.push(tree);
+                addSolidObject(tx, tz, 0.4);
+            }
+        }
+
+        function createBambooCluster(x, z) {
+            // Bambous
+            for (let i = 0; i < 8; i++) {
+                const bx = x + (Math.random() - 0.5) * 4;
+                const bz = z + (Math.random() - 0.5) * 4;
+                const bamboo = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 5 + Math.random() * 3, 8), new THREE.MeshLambertMaterial({ color: 0x7cb342 }));
+                bamboo.position.set(bx, 2.5, bz);
+                scene.add(bamboo); levelObjects.push(bamboo);
+                addSolidObject(bx, bz, 0.15);
+            }
+        }
+
+        function createDesertCluster(x, z) {
+            // Dune + cactus
+            const dune = new THREE.Mesh(new THREE.SphereGeometry(4 + Math.random() * 3, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xdaa520 }));
+            dune.position.set(x, 0, z);
+            scene.add(dune); levelObjects.push(dune);
+            addSolidObject(x, z, 3);
+            // Cactus
+            const cx = x + (Math.random() - 0.5) * 8;
+            const cz = z + (Math.random() - 0.5) * 8;
+            const cactus = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 2, 8), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
+            cactus.position.set(cx, 1, cz);
+            scene.add(cactus); levelObjects.push(cactus);
+            addSolidObject(cx, cz, 0.4);
+        }
+
+        function createCemeteryCluster(x, z) {
+            // Tombes
+            for (let i = 0; i < 5; i++) {
+                const tx = x + (Math.random() - 0.5) * 6;
+                const tz = z + (Math.random() - 0.5) * 6;
+                const tomb = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 0.2), new THREE.MeshLambertMaterial({ color: 0x7f8c8d }));
+                tomb.position.set(tx, 0.75, tz);
+                scene.add(tomb); levelObjects.push(tomb);
+                addSolidObject(tx, tz, 0.5);
+            }
+        }
+
+        function createRuinsCluster(x, z) {
+            // Piliers cassés et blocs
+            for (let i = 0; i < 3; i++) {
+                const px = x + (Math.random() - 0.5) * 5;
+                const pz = z + (Math.random() - 0.5) * 5;
+                const h = 2 + Math.random() * 3;
+                const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, h, 8), new THREE.MeshLambertMaterial({ color: 0x808080 }));
+                pillar.position.set(px, h / 2, pz);
+                scene.add(pillar); levelObjects.push(pillar);
+                addSolidObject(px, pz, 0.8);
+            }
+        }
+
+        function createCaveCluster(x, z) {
+            // Stalagmites
+            for (let i = 0; i < 5; i++) {
+                const sx = x + (Math.random() - 0.5) * 5;
+                const sz = z + (Math.random() - 0.5) * 5;
+                const h = 1 + Math.random() * 2;
+                const stalagmite = new THREE.Mesh(new THREE.ConeGeometry(0.4, h, 6), new THREE.MeshLambertMaterial({ color: 0x4e342e }));
+                stalagmite.position.set(sx, h / 2, sz);
+                scene.add(stalagmite); levelObjects.push(stalagmite);
+                addSolidObject(sx, sz, 0.4);
+            }
+        }
+
+        function createGhostTownCluster(x, z) {
+            // Petite structure abandonnée
+            const struct = new THREE.Mesh(new THREE.BoxGeometry(3, 2, 3), new THREE.MeshLambertMaterial({ color: 0x5d5d5d }));
+            struct.position.set(x, 1, z);
+            scene.add(struct); levelObjects.push(struct);
+            addSolidObject(x, z, 2);
+        }
+
+        function createSnowCluster(x, z) {
+            // Sapins enneigés
+            for (let i = 0; i < 3; i++) {
+                const px = x + (Math.random() - 0.5) * 5;
+                const pz = z + (Math.random() - 0.5) * 5;
+                const pine = new THREE.Group();
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 1.5, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
+                trunk.position.y = 0.75;
+                pine.add(trunk);
+                for (let j = 0; j < 3; j++) {
+                    const layer = new THREE.Mesh(new THREE.ConeGeometry(1.5 - j * 0.3, 1.5, 8), new THREE.MeshLambertMaterial({ color: 0xeceff1 }));
+                    layer.position.y = 2 + j;
+                    pine.add(layer);
+                }
+                pine.position.set(px, 0, pz);
+                scene.add(pine); levelObjects.push(pine);
+                addSolidObject(px, pz, 0.3);
+            }
+        }
+
+        function createVolcanoCluster(x, z) {
+            // Rochers volcaniques noirs + petite flaque de lave
+            for (let i = 0; i < 4; i++) {
+                const r = 1 + Math.random() * 1.5;
+                const rx = x + (Math.random() - 0.5) * 6;
+                const rz = z + (Math.random() - 0.5) * 6;
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(r), new THREE.MeshLambertMaterial({ color: 0x37474f }));
+                rock.position.set(rx, r * 0.5, rz);
+                scene.add(rock); levelObjects.push(rock);
+                addSolidObject(rx, rz, r * 0.8);
+            }
+            // Petite flaque de lave
+            const lava = new THREE.Mesh(new THREE.CircleGeometry(1 + Math.random(), 16), new THREE.MeshBasicMaterial({ color: 0xff5722 }));
+            lava.rotation.x = -Math.PI / 2;
+            lava.position.set(x, 0.1, z);
+            scene.add(lava); levelObjects.push(lava);
+        }
+
+        function createCrystalCluster(x, z) {
+            // Cristaux
+            const colors = [0x9b59b6, 0x3498db, 0x1abc9c, 0xe74c3c];
+            for (let i = 0; i < 4; i++) {
+                const cx = x + (Math.random() - 0.5) * 4;
+                const cz = z + (Math.random() - 0.5) * 4;
+                const h = 2 + Math.random() * 2;
+                const crystal = new THREE.Mesh(new THREE.ConeGeometry(0.6, h, 6), new THREE.MeshLambertMaterial({ color: colors[i], transparent: true, opacity: 0.7 }));
+                crystal.position.set(cx, h / 2, cz);
+                scene.add(crystal); levelObjects.push(crystal);
+                addSolidObject(cx, cz, 0.6);
+            }
+        }
+
+        function createDarkCluster(x, z) {
+            // Piliers noirs flottants
+            for (let i = 0; i < 3; i++) {
+                const px = x + (Math.random() - 0.5) * 5;
+                const pz = z + (Math.random() - 0.5) * 5;
+                const pillar = new THREE.Mesh(new THREE.BoxGeometry(2, 8, 2), new THREE.MeshLambertMaterial({ color: 0x1a1a1a }));
+                pillar.position.set(px, 4, pz);
+                scene.add(pillar); levelObjects.push(pillar);
+                addSolidObject(px, pz, 1.5);
+            }
+        }
+
+        function createRockCluster(x, z, color) {
+            // Groupe de rochers générique
+            for (let i = 0; i < 4; i++) {
+                const r = 1 + Math.random() * 1.5;
+                const rx = x + (Math.random() - 0.5) * 6;
+                const rz = z + (Math.random() - 0.5) * 6;
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(r), new THREE.MeshLambertMaterial({ color: color }));
+                rock.position.set(rx, r * 0.5, rz);
+                scene.add(rock); levelObjects.push(rock);
+                addSolidObject(rx, rz, r * 0.8);
+            }
         }
 
         // Fonction helper pour ajouter un objet solide avec collision
@@ -2497,16 +2621,19 @@
                 scene.add(lava);
                 levelObjects.push(lava);
             }
-            // Cratère central avec collision (anneau)
+            // Cratère central (juste visuel, pas de collision - on peut entrer/sortir)
             const crater = new THREE.Mesh(new THREE.TorusGeometry(10, 3, 8, 16), new THREE.MeshLambertMaterial({ color: 0x3e2723 }));
             crater.rotation.x = Math.PI / 2;
             crater.position.set(0, 0.5, 0);
             scene.add(crater);
             levelObjects.push(crater);
-            // Collision en cercle pour le cratère
-            for (let angle = 0; angle < Math.PI * 2; angle += 0.5) {
-                addSolidObject(Math.cos(angle) * 10, Math.sin(angle) * 10, 3);
-            }
+            // Lave au centre du cratère (visuel)
+            const lavaCenter = new THREE.Mesh(new THREE.CircleGeometry(8, 32), new THREE.MeshBasicMaterial({ color: 0xff5722 }));
+            lavaCenter.rotation.x = -Math.PI / 2;
+            lavaCenter.position.set(0, 0.2, 0);
+            scene.add(lavaCenter);
+            levelObjects.push(lavaCenter);
+            // Pas de collision - le joueur peut explorer librement le cratère
             // Lumière orange
             const lavaLight = new THREE.PointLight(0xff5722, 1, 50);
             lavaLight.position.set(0, 5, 0);
