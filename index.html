@@ -1607,7 +1607,12 @@
             }
 
             // Reset player position
-            player.position.set(0, 0, 0);
+            if (levelNum === 17) {
+                // Niveau volcan: spawn au sommet dans la lave
+                player.position.set(0, 21, 0);
+            } else {
+                player.position.set(0, 0, 0);
+            }
             playerVelocity = { x: 0, y: 0, z: 0 };
             isGrounded = true;
 
@@ -2603,41 +2608,76 @@
 
         // === NIVEAU 17: Volcan Actif ===
         function createVolcanoLevel() {
-            // Rochers volcaniques avec collision
+            // === VOLCAN TRONQUÉ (avec cratère de lave au sommet) ===
+            // Utilise CylinderGeometry pour créer un cône tronqué (frustum)
+            // radiusTop = 8 (cratère), radiusBottom = 35 (base), height = 20
+            const volcanoGeometry = new THREE.CylinderGeometry(8, 35, 20, 32, 1, true); // Ouvert (sans dessus/dessous)
+            const volcanoMaterial = new THREE.MeshLambertMaterial({ color: 0x5d4037, side: THREE.DoubleSide }); // Marron volcanique
+            const volcano = new THREE.Mesh(volcanoGeometry, volcanoMaterial);
+            volcano.position.set(0, 10, 0); // Centre à 10, donc base à 0 et sommet à 20
+            volcano.castShadow = true;
+            volcano.receiveShadow = true;
+            scene.add(volcano);
+            levelObjects.push(volcano);
+
+            // Bord du cratère (anneau au sommet)
+            const craterRim = new THREE.Mesh(
+                new THREE.TorusGeometry(8, 1.5, 8, 32),
+                new THREE.MeshLambertMaterial({ color: 0x4a2c2a })
+            );
+            craterRim.rotation.x = Math.PI / 2;
+            craterRim.position.set(0, 20.5, 0);
+            scene.add(craterRim);
+            levelObjects.push(craterRim);
+
+            // Lave qui remplit tout le cratère au sommet
+            const lavaCenter = new THREE.Mesh(
+                new THREE.CircleGeometry(8, 32),
+                new THREE.MeshBasicMaterial({ color: 0xff5722 })
+            );
+            lavaCenter.rotation.x = -Math.PI / 2;
+            lavaCenter.position.set(0, 20.1, 0);
+            scene.add(lavaCenter);
+            levelObjects.push(lavaCenter);
+
+            // Lave qui brille (effet de lumière)
+            const lavaGlow = new THREE.PointLight(0xff5722, 2, 40);
+            lavaGlow.position.set(0, 25, 0);
+            scene.add(lavaGlow);
+            levelObjects.push(lavaGlow);
+
+            // Rochers volcaniques autour (pas sur les pentes pour pouvoir escalader)
             for (let i = 0; i < 40; i++) {
                 const radius = 1 + Math.random() * 2;
-                const x = (Math.random() - 0.5) * 80;
-                const z = (Math.random() - 0.5) * 80;
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 38 + Math.random() * 10; // Loin du volcan
+                const x = Math.cos(angle) * dist;
+                const z = Math.sin(angle) * dist;
                 const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(radius), new THREE.MeshLambertMaterial({ color: 0x37474f }));
                 rock.position.set(x, 0.5, z);
                 scene.add(rock);
                 levelObjects.push(rock);
                 addSolidObject(x, z, radius * 0.8);
             }
-            // Flaques de lave (pas de collision, juste au sol)
+
+            // Flaques de lave autour du volcan
             for (let i = 0; i < 15; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 38 + Math.random() * 10;
+                const x = Math.cos(angle) * dist;
+                const z = Math.sin(angle) * dist;
                 const lava = new THREE.Mesh(new THREE.CircleGeometry(2 + Math.random() * 3, 16), new THREE.MeshBasicMaterial({ color: 0xff5722 }));
                 lava.rotation.x = -Math.PI / 2;
-                lava.position.set((Math.random() - 0.5) * 70, 0.1, (Math.random() - 0.5) * 70);
+                lava.position.set(x, 0.1, z);
                 scene.add(lava);
                 levelObjects.push(lava);
             }
-            // Cratère central (juste visuel, pas de collision - on peut entrer/sortir)
-            const crater = new THREE.Mesh(new THREE.TorusGeometry(10, 3, 8, 16), new THREE.MeshLambertMaterial({ color: 0x3e2723 }));
-            crater.rotation.x = Math.PI / 2;
-            crater.position.set(0, 0.5, 0);
-            scene.add(crater);
-            levelObjects.push(crater);
-            // Lave au centre du cratère (visuel)
-            const lavaCenter = new THREE.Mesh(new THREE.CircleGeometry(8, 32), new THREE.MeshBasicMaterial({ color: 0xff5722 }));
-            lavaCenter.rotation.x = -Math.PI / 2;
-            lavaCenter.position.set(0, 0.2, 0);
-            scene.add(lavaCenter);
-            levelObjects.push(lavaCenter);
-            // Pas de collision - le joueur peut explorer librement le cratère
-            // Lumière orange
-            const lavaLight = new THREE.PointLight(0xff5722, 1, 50);
-            lavaLight.position.set(0, 5, 0);
+
+            // PAS DE COLLISION sur les pentes - on peut escalader librement !
+
+            // Lumière orange ambiante
+            const lavaLight = new THREE.PointLight(0xff5722, 1, 60);
+            lavaLight.position.set(0, 10, 0);
             scene.add(lavaLight);
             levelObjects.push(lavaLight);
             // Cachette avec collision (bouton à -43, -40)
@@ -3176,6 +3216,26 @@
 
             // Ground collision
             let groundLevel = 0;
+
+            // Niveau 17 (Volcan) - surface du cône tronqué
+            if (currentLevel === 17) {
+                const distFromCenter = Math.sqrt(player.position.x * player.position.x + player.position.z * player.position.z);
+                const volcanoBaseRadius = 35;
+                const volcanoCraterRadius = 8;
+                const volcanoHeight = 20;
+
+                if (distFromCenter <= volcanoCraterRadius) {
+                    // Dans le cratère (sur la lave) - surface plate au sommet
+                    groundLevel = volcanoHeight;
+                } else if (distFromCenter <= volcanoBaseRadius) {
+                    // Sur les pentes du cône tronqué - interpolation linéaire
+                    // De rayon 8 (hauteur 20) à rayon 35 (hauteur 0)
+                    groundLevel = volcanoHeight * (volcanoBaseRadius - distFromCenter) / (volcanoBaseRadius - volcanoCraterRadius);
+                } else {
+                    // Hors du volcan - sol plat
+                    groundLevel = 0;
+                }
+            }
 
             // Check platform collisions (for level 5)
             if (currentLevel === 5) {
