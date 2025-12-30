@@ -830,6 +830,7 @@
         let canPressButton = false;
         let levelObjects = [];
         let platforms = [];
+        let solidObjects = []; // Objets avec collision
 
         // Player controls
         const keys = {
@@ -855,31 +856,32 @@
         let level20Key = null;
         let level20Door = null;
         let level20Rock = null;
+        let level20RockCollision = null; // Pour pouvoir supprimer la collision
         let hasKey = false;
         let doorOpened = false;
         let level20ButtonHidden = true;
 
         // Level configurations - 20 niveaux
         const levelConfigs = {
-            1: { name: "Jardin Fleuri", hint: "Un joli jardin... le bouton est près des fleurs", groundColor: 0x3d8b37, skyColor: 0x87ceeb, fogColor: 0x87ceeb, fogDensity: 0.015, buttonPos: { x: 15, y: 0.5, z: 10 } },
+            1: { name: "Jardin Fleuri", hint: "Un joli jardin... le bouton est près des fleurs", groundColor: 0x3d8b37, skyColor: 0x87ceeb, fogColor: 0x87ceeb, fogDensity: 0.015, buttonPos: { x: 17, y: 0.5, z: 10 } },
             2: { name: "Forêt Paisible", hint: "Caché derrière un arbre...", groundColor: 0x2d5a27, skyColor: 0x87ceeb, fogColor: 0x87ceeb, fogDensity: 0.02, buttonPos: { x: 25, y: 0.5, z: -20 } },
             3: { name: "Plage Tropicale", hint: "Sous un palmier peut-être ?", groundColor: 0xf4d03f, skyColor: 0x5dade2, fogColor: 0x5dade2, fogDensity: 0.012, buttonPos: { x: -20, y: 0.5, z: 25 } },
             4: { name: "Prairie Verdoyante", hint: "Parmi les hautes herbes...", groundColor: 0x58d68d, skyColor: 0xaed6f1, fogColor: 0xaed6f1, fogDensity: 0.015, buttonPos: { x: 30, y: 0.5, z: -15 } },
-            5: { name: "Village Abandonné", hint: "Regarde sous les structures...", groundColor: 0x8b7355, skyColor: 0xdeb887, fogColor: 0xdeb887, fogDensity: 0.025, buttonPos: { x: -18, y: 0.5, z: 22 } },
+            5: { name: "Village Abandonné", hint: "Regarde sous les structures...", groundColor: 0x8b7355, skyColor: 0xdeb887, fogColor: 0xdeb887, fogDensity: 0.025, buttonPos: { x: -18, y: 0.5, z: 24 } },
             6: { name: "Marais Brumeux", hint: "Dans la brume, près de l'eau...", groundColor: 0x4a5d23, skyColor: 0x7f8c8d, fogColor: 0x7f8c8d, fogDensity: 0.04, buttonPos: { x: 28, y: 0.5, z: 28 } },
             7: { name: "Forêt de Bambou", hint: "Entre les bambous...", groundColor: 0x2e7d32, skyColor: 0xa5d6a7, fogColor: 0xa5d6a7, fogDensity: 0.025, buttonPos: { x: -25, y: 0.5, z: -30 } },
-            8: { name: "Canyon Rocheux", hint: "Entre les rochers il y a des secrets...", groundColor: 0xcd853f, skyColor: 0xffa07a, fogColor: 0xffa07a, fogDensity: 0.02, buttonPos: { x: 15, y: 0.5, z: 28 } },
-            9: { name: "Désert Aride", hint: "Derrière une dune ou un cactus...", groundColor: 0xe9c46a, skyColor: 0xf4d03f, fogColor: 0xf4d03f, fogDensity: 0.015, buttonPos: { x: -35, y: 0.5, z: 20 } },
+            8: { name: "Canyon Rocheux", hint: "Entre les rochers il y a des secrets...", groundColor: 0xcd853f, skyColor: 0xffa07a, fogColor: 0xffa07a, fogDensity: 0.02, buttonPos: { x: 18, y: 0.5, z: 30 } },
+            9: { name: "Désert Aride", hint: "Derrière une dune ou un cactus...", groundColor: 0xe9c46a, skyColor: 0xf4d03f, fogColor: 0xf4d03f, fogDensity: 0.015, buttonPos: { x: -28, y: 0.5, z: 20 } },
             10: { name: "Cimetière Lugubre", hint: "Parmi les tombes...", groundColor: 0x3d3d3d, skyColor: 0x2c3e50, fogColor: 0x2c3e50, fogDensity: 0.035, buttonPos: { x: 20, y: 0.5, z: -35 } },
-            11: { name: "Ruines Antiques", hint: "Les anciens piliers cachent des trésors...", groundColor: 0x4a4a4a, skyColor: 0x483d8b, fogColor: 0x483d8b, fogDensity: 0.03, buttonPos: { x: -25, y: 0.5, z: -25 } },
+            11: { name: "Ruines Antiques", hint: "Les anciens piliers cachent des trésors...", groundColor: 0x4a4a4a, skyColor: 0x483d8b, fogColor: 0x483d8b, fogDensity: 0.03, buttonPos: { x: -25, y: 0.5, z: -25.5 } },
             12: { name: "Grotte Souterraine", hint: "Dans l'obscurité des roches...", groundColor: 0x1a1a1a, skyColor: 0x0d0d0d, fogColor: 0x0d0d0d, fogDensity: 0.05, buttonPos: { x: 30, y: 0.5, z: 35 } },
-            13: { name: "Ville Fantôme", hint: "Dans une maison abandonnée...", groundColor: 0x5d5d5d, skyColor: 0x34495e, fogColor: 0x34495e, fogDensity: 0.03, buttonPos: { x: -30, y: 0.5, z: -20 } },
+            13: { name: "Ville Fantôme", hint: "Dans une maison abandonnée...", groundColor: 0x5d5d5d, skyColor: 0x34495e, fogColor: 0x34495e, fogDensity: 0.03, buttonPos: { x: -33, y: 0.5, z: -25 } },
             14: { name: "Temple Ancien", hint: "Au cœur du temple...", groundColor: 0x8d6e63, skyColor: 0x607d8b, fogColor: 0x607d8b, fogDensity: 0.025, buttonPos: { x: 35, y: 0.5, z: -35 } },
-            15: { name: "Jungle Dense", hint: "La végétation cache bien des choses...", groundColor: 0x1b5e20, skyColor: 0x4caf50, fogColor: 0x4caf50, fogDensity: 0.04, buttonPos: { x: -38, y: 0.5, z: 38 } },
-            16: { name: "Montagne Enneigée", hint: "Sous la neige froide...", groundColor: 0xeceff1, skyColor: 0xb0bec5, fogColor: 0xb0bec5, fogDensity: 0.025, buttonPos: { x: 25, y: 0.5, z: -40 } },
-            17: { name: "Volcan Actif", hint: "Près de la lave bouillonnante...", groundColor: 0x4a2c2a, skyColor: 0xd32f2f, fogColor: 0xd32f2f, fogDensity: 0.03, buttonPos: { x: -40, y: 0.5, z: -40 } },
-            18: { name: "Labyrinthe de Cristaux", hint: "Parmi les cristaux brillants...", groundColor: 0x1a1a2e, skyColor: 0x0f0f1a, fogColor: 0x0f0f1a, fogDensity: 0.025, buttonPos: { x: -35, y: 0.5, z: 32 } },
-            19: { name: "Dimension Sombre", hint: "Dans les ténèbres absolues...", groundColor: 0x0a0a0a, skyColor: 0x000000, fogColor: 0x0a0a0a, fogDensity: 0.06, buttonPos: { x: 38, y: 0.5, z: 38 } },
+            15: { name: "Jungle Dense", hint: "La végétation cache bien des choses...", groundColor: 0x1b5e20, skyColor: 0x4caf50, fogColor: 0x4caf50, fogDensity: 0.04, buttonPos: { x: -35, y: 0.5, z: 41 } },
+            16: { name: "Montagne Enneigée", hint: "Sous la neige froide...", groundColor: 0xeceff1, skyColor: 0xb0bec5, fogColor: 0xb0bec5, fogDensity: 0.025, buttonPos: { x: 25, y: 0.5, z: -42 } },
+            17: { name: "Volcan Actif", hint: "Près de la lave bouillonnante...", groundColor: 0x4a2c2a, skyColor: 0xd32f2f, fogColor: 0xd32f2f, fogDensity: 0.03, buttonPos: { x: -43, y: 0.5, z: -40 } },
+            18: { name: "Labyrinthe de Cristaux", hint: "Parmi les cristaux brillants...", groundColor: 0x1a1a2e, skyColor: 0x0f0f1a, fogColor: 0x0f0f1a, fogDensity: 0.025, buttonPos: { x: -38, y: 0.5, z: 28 } },
+            19: { name: "Dimension Sombre", hint: "Dans les ténèbres absolues...", groundColor: 0x0a0a0a, skyColor: 0x000000, fogColor: 0x0a0a0a, fogDensity: 0.06, buttonPos: { x: 41, y: 0.5, z: 41 } },
             20: { name: "Sanctuaire Final", hint: "Trouve la clé cachée... 🔑", groundColor: 0x1a1a2e, skyColor: 0x1a0a2e, fogColor: 0x1a0a2e, fogDensity: 0.02, buttonPos: { x: 35, y: 0.5, z: -35 }, special: true }
         };
 
@@ -1259,44 +1261,44 @@
 
                 switch (spotType) {
                     case 'bushCluster':
-                        // Groupe de buissons denses
+                        // Groupe de buissons denses avec collision
                         for (let i = 0; i < 6 + Math.floor(Math.random() * 5); i++) {
+                            const radius = 1 + Math.random() * 0.8;
+                            const bx = pos.x + (Math.random() - 0.5) * 6;
+                            const bz = pos.z + (Math.random() - 0.5) * 6;
                             const bush = new THREE.Mesh(
-                                new THREE.SphereGeometry(1 + Math.random() * 0.8, 8, 8),
+                                new THREE.SphereGeometry(radius, 8, 8),
                                 new THREE.MeshLambertMaterial({ color: 0x228B22 })
                             );
-                            bush.position.set(
-                                pos.x + (Math.random() - 0.5) * 6,
-                                0.8 + Math.random() * 0.4,
-                                pos.z + (Math.random() - 0.5) * 6
-                            );
+                            bush.position.set(bx, 0.8 + Math.random() * 0.4, bz);
                             bush.castShadow = true;
                             scene.add(bush);
                             levelObjects.push(bush);
+                            addSolidObject(bx, bz, radius);
                         }
                         break;
 
                     case 'rockCluster':
-                        // Groupe de rochers
+                        // Groupe de rochers avec collision
                         for (let i = 0; i < 5 + Math.floor(Math.random() * 4); i++) {
+                            const radius = 1 + Math.random() * 1.5;
+                            const rx = pos.x + (Math.random() - 0.5) * 7;
+                            const rz = pos.z + (Math.random() - 0.5) * 7;
                             const rock = new THREE.Mesh(
-                                new THREE.DodecahedronGeometry(1 + Math.random() * 1.5),
+                                new THREE.DodecahedronGeometry(radius),
                                 new THREE.MeshLambertMaterial({ color: 0x696969 })
                             );
-                            rock.position.set(
-                                pos.x + (Math.random() - 0.5) * 7,
-                                0.5 + Math.random() * 0.5,
-                                pos.z + (Math.random() - 0.5) * 7
-                            );
+                            rock.position.set(rx, 0.5 + Math.random() * 0.5, rz);
                             rock.rotation.set(Math.random(), Math.random(), Math.random());
                             rock.castShadow = true;
                             scene.add(rock);
                             levelObjects.push(rock);
+                            addSolidObject(rx, rz, radius * 0.8);
                         }
                         break;
 
                     case 'bigRock':
-                        // Une grosse pierre seule
+                        // Une grosse pierre seule avec collision
                         const bigRock = new THREE.Mesh(
                             new THREE.DodecahedronGeometry(3 + Math.random() * 2),
                             new THREE.MeshLambertMaterial({ color: 0x5a5a5a })
@@ -1307,25 +1309,28 @@
                         bigRock.castShadow = true;
                         scene.add(bigRock);
                         levelObjects.push(bigRock);
-                        // Quelques petits rochers autour
+                        addSolidObject(pos.x, pos.z, 4); // Grande collision
+                        // Quelques petits rochers autour avec collision
                         for (let i = 0; i < 3; i++) {
+                            const sr = 0.5 + Math.random() * 0.5;
+                            const sx = pos.x + (Math.random() - 0.5) * 6;
+                            const sz = pos.z + (Math.random() - 0.5) * 6;
                             const smallRock = new THREE.Mesh(
-                                new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.5),
+                                new THREE.DodecahedronGeometry(sr),
                                 new THREE.MeshLambertMaterial({ color: 0x696969 })
                             );
-                            smallRock.position.set(
-                                pos.x + (Math.random() - 0.5) * 6,
-                                0.3,
-                                pos.z + (Math.random() - 0.5) * 6
-                            );
+                            smallRock.position.set(sx, 0.3, sz);
                             scene.add(smallRock);
                             levelObjects.push(smallRock);
+                            addSolidObject(sx, sz, sr * 0.8);
                         }
                         break;
 
                     case 'treeCluster':
-                        // Groupe d'arbres serrés
+                        // Groupe d'arbres serrés avec collision
                         for (let i = 0; i < 4 + Math.floor(Math.random() * 3); i++) {
+                            const tx = pos.x + (Math.random() - 0.5) * 5;
+                            const tz = pos.z + (Math.random() - 0.5) * 5;
                             const tree = new THREE.Group();
                             const trunkHeight = 2 + Math.random() * 2;
                             const trunk = new THREE.Mesh(
@@ -1342,48 +1347,45 @@
                             leaves.position.y = trunkHeight + 1;
                             tree.add(leaves);
 
-                            tree.position.set(
-                                pos.x + (Math.random() - 0.5) * 5,
-                                0,
-                                pos.z + (Math.random() - 0.5) * 5
-                            );
+                            tree.position.set(tx, 0, tz);
                             tree.castShadow = true;
                             scene.add(tree);
                             levelObjects.push(tree);
+                            addSolidObject(tx, tz, 0.4);
                         }
                         break;
 
                     case 'mixedCluster':
-                        // Mélange de buissons, rochers et petits arbres
+                        // Mélange de buissons, rochers et petits arbres avec collision
                         // Buissons
                         for (let i = 0; i < 3; i++) {
+                            const br = 0.8 + Math.random() * 0.5;
+                            const bx = pos.x + (Math.random() - 0.5) * 5;
+                            const bz = pos.z + (Math.random() - 0.5) * 5;
                             const bush = new THREE.Mesh(
-                                new THREE.SphereGeometry(0.8 + Math.random() * 0.5, 8, 8),
+                                new THREE.SphereGeometry(br, 8, 8),
                                 new THREE.MeshLambertMaterial({ color: 0x2d5a27 })
                             );
-                            bush.position.set(
-                                pos.x + (Math.random() - 0.5) * 5,
-                                0.6,
-                                pos.z + (Math.random() - 0.5) * 5
-                            );
+                            bush.position.set(bx, 0.6, bz);
                             scene.add(bush);
                             levelObjects.push(bush);
+                            addSolidObject(bx, bz, br);
                         }
                         // Rochers
                         for (let i = 0; i < 2; i++) {
+                            const rr = 1 + Math.random();
+                            const rx = pos.x + (Math.random() - 0.5) * 6;
+                            const rz = pos.z + (Math.random() - 0.5) * 6;
                             const rock = new THREE.Mesh(
-                                new THREE.DodecahedronGeometry(1 + Math.random()),
+                                new THREE.DodecahedronGeometry(rr),
                                 new THREE.MeshLambertMaterial({ color: 0x696969 })
                             );
-                            rock.position.set(
-                                pos.x + (Math.random() - 0.5) * 6,
-                                0.5,
-                                pos.z + (Math.random() - 0.5) * 6
-                            );
+                            rock.position.set(rx, 0.5, rz);
                             scene.add(rock);
                             levelObjects.push(rock);
+                            addSolidObject(rx, rz, rr * 0.8);
                         }
-                        // Un arbre
+                        // Un arbre avec collision
                         const mixTree = new THREE.Group();
                         const mixTrunk = new THREE.Mesh(
                             new THREE.CylinderGeometry(0.3, 0.5, 3, 8),
@@ -1400,9 +1402,15 @@
                         mixTree.position.set(pos.x, 0, pos.z);
                         scene.add(mixTree);
                         levelObjects.push(mixTree);
+                        addSolidObject(pos.x, pos.z, 0.5);
                         break;
                 }
             });
+        }
+
+        // Fonction helper pour ajouter un objet solide avec collision
+        function addSolidObject(x, z, radius) {
+            solidObjects.push({ x: x, z: z, radius: radius });
         }
 
         function loadLevel(levelNum) {
@@ -1410,9 +1418,11 @@
             levelObjects.forEach(obj => scene.remove(obj));
             levelObjects = [];
             platforms = [];
+            solidObjects = []; // Reset collisions
             level20Key = null;
             level20Door = null;
             level20Rock = null;
+            level20RockCollision = null;
             hasKey = false;
             doorOpened = false;
             level20ButtonHidden = (levelNum === 20);
@@ -1506,6 +1516,8 @@
             tree.position.set(x, 0, z);
             scene.add(tree);
             levelObjects.push(tree);
+            // Collision pour le tronc
+            addSolidObject(x, z, 0.5 * scale);
             return tree;
         }
 
@@ -1519,6 +1531,8 @@
             rock.receiveShadow = true;
             scene.add(rock);
             levelObjects.push(rock);
+            // Collision pour le rocher
+            addSolidObject(x, z, scale * 0.8);
             return rock;
         }
 
@@ -1554,6 +1568,8 @@
             house.rotation.y = rotation;
             scene.add(house);
             levelObjects.push(house);
+            // Collision pour la maison (rayon basé sur la diagonale)
+            addSolidObject(x, z, 4);
             return house;
         }
 
@@ -1581,6 +1597,8 @@
             pillar.position.set(x, 0, z);
             scene.add(pillar);
             levelObjects.push(pillar);
+            // Collision pour le pilier
+            addSolidObject(x, z, 1);
             return pillar;
         }
 
@@ -1626,19 +1644,19 @@
                 createRock(x, z, 0.5 + Math.random() * 1);
             }
 
-            // Bushes (small green spheres)
+            // Bushes (small green spheres) avec collision
             const bushMaterial = new THREE.MeshLambertMaterial({ color: 0x2d5a27 });
             for (let i = 0; i < 25; i++) {
-                const bushGeometry = new THREE.SphereGeometry(0.5 + Math.random() * 0.5, 8, 8);
+                const radius = 0.5 + Math.random() * 0.5;
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                const bushGeometry = new THREE.SphereGeometry(radius, 8, 8);
                 const bush = new THREE.Mesh(bushGeometry, bushMaterial);
-                bush.position.set(
-                    (Math.random() - 0.5) * 80,
-                    0.3,
-                    (Math.random() - 0.5) * 80
-                );
+                bush.position.set(x, 0.3, z);
                 bush.castShadow = true;
                 scene.add(bush);
                 levelObjects.push(bush);
+                addSolidObject(x, z, radius);
             }
         }
 
@@ -1674,8 +1692,9 @@
             cart.position.set(-18, 0, 20);
             scene.add(cart);
             levelObjects.push(cart);
+            addSolidObject(-18, 20, 2.5); // Collision charrette
 
-            // Barrels
+            // Barrels avec collision
             const barrelGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1.2, 16);
             const barrelMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
             const barrelPositions = [[8, 15], [-8, -10], [20, -5], [-20, 15]];
@@ -1685,9 +1704,10 @@
                 barrel.castShadow = true;
                 scene.add(barrel);
                 levelObjects.push(barrel);
+                addSolidObject(pos[0], pos[1], 0.5);
             });
 
-            // Fences
+            // Fences avec collision
             const fenceMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
             for (let i = -20; i < 25; i += 3) {
                 const post = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.5, 0.2), fenceMaterial);
@@ -1695,6 +1715,7 @@
                 post.castShadow = true;
                 scene.add(post);
                 levelObjects.push(post);
+                addSolidObject(i, 30, 0.3);
             }
 
             // Some trees
@@ -1712,11 +1733,11 @@
                 createRock(x, z, scale);
             }
 
-            // Rock formations hiding the button (at x:15, z:28)
+            // Rock formations hiding the button (at x:18, z:30) - décalé à côté
             createRock(14, 26, 2.5);
-            createRock(17, 29, 2);
-            createRock(13, 30, 1.8);
-            createRock(16, 27, 1.5);
+            createRock(20, 29, 2);
+            createRock(13, 32, 1.8);
+            createRock(21, 27, 1.5);
 
             // Canyon walls (tall rocks on sides)
             for (let i = -40; i < 40; i += 5) {
@@ -1724,9 +1745,11 @@
                 createRock(40 - Math.random() * 5, i, 3 + Math.random() * 2);
             }
 
-            // Cacti
+            // Cacti avec collision
             const cactusMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
             for (let i = 0; i < 15; i++) {
+                const x = (Math.random() - 0.5) * 70;
+                const z = (Math.random() - 0.5) * 70;
                 const cactus = new THREE.Group();
                 const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 2, 8), cactusMaterial);
                 body.position.y = 1;
@@ -1737,10 +1760,11 @@
                 arm1.rotation.z = -Math.PI / 4;
                 cactus.add(arm1);
 
-                cactus.position.set((Math.random() - 0.5) * 70, 0, (Math.random() - 0.5) * 70);
+                cactus.position.set(x, 0, z);
                 cactus.castShadow = true;
                 scene.add(cactus);
                 levelObjects.push(cactus);
+                addSolidObject(x, z, 0.4);
             }
         }
 
@@ -1764,38 +1788,48 @@
             createPillar(-28, -25, 6, false);
             createPillar(-25, -28, 5, true);
 
-            // Fallen pillars
+            // Fallen pillars avec collision
             for (let i = 0; i < 5; i++) {
+                const x = (Math.random() - 0.5) * 40;
+                const z = (Math.random() - 0.5) * 40;
                 const fallenGeometry = new THREE.CylinderGeometry(0.8, 1, 6, 8);
                 const fallenMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
                 const fallen = new THREE.Mesh(fallenGeometry, fallenMaterial);
                 fallen.rotation.z = Math.PI / 2;
-                fallen.position.set((Math.random() - 0.5) * 40, 0.8, (Math.random() - 0.5) * 40);
+                fallen.position.set(x, 0.8, z);
                 fallen.castShadow = true;
                 fallen.receiveShadow = true;
                 scene.add(fallen);
                 levelObjects.push(fallen);
+                // Collision linéaire pour pilier tombé
+                for (let offset = -2.5; offset <= 2.5; offset += 1) {
+                    addSolidObject(x + offset, z, 1);
+                }
             }
 
-            // Stone blocks scattered
+            // Stone blocks scattered avec collision
             const blockMaterial = new THREE.MeshLambertMaterial({ color: 0x696969 });
             for (let i = 0; i < 20; i++) {
+                const size = 1 + Math.random();
+                const x = (Math.random() - 0.5) * 50;
+                const z = (Math.random() - 0.5) * 50;
                 const block = new THREE.Mesh(
-                    new THREE.BoxGeometry(1 + Math.random(), 0.5 + Math.random() * 0.5, 1 + Math.random()),
+                    new THREE.BoxGeometry(size, 0.5 + Math.random() * 0.5, size),
                     blockMaterial
                 );
-                block.position.set((Math.random() - 0.5) * 50, 0.25, (Math.random() - 0.5) * 50);
+                block.position.set(x, 0.25, z);
                 block.castShadow = true;
                 block.receiveShadow = true;
                 scene.add(block);
                 levelObjects.push(block);
+                addSolidObject(x, z, size * 0.6);
             }
         }
 
         function createCrystalLevel() {
             // Niveau 18: Labyrinthe de Cristaux - très difficile à trouver le bouton
 
-            // Fonction pour créer un cristal
+            // Fonction pour créer un cristal avec collision
             const createCrystal = (x, z, height, color) => {
                 const crystal = new THREE.Group();
                 const crystalGeometry = new THREE.ConeGeometry(0.8, height, 6);
@@ -1819,6 +1853,7 @@
                 crystal.position.set(x, 0, z);
                 scene.add(crystal);
                 levelObjects.push(crystal);
+                addSolidObject(x, z, 0.8); // Collision cristal
             };
 
             // Fonction pour créer un mur de cristaux
@@ -1867,20 +1902,20 @@
             createCrystal(-37, 33, 4, 0x3498db);
             createCrystal(-34, 31, 5.5, 0x1abc9c);
 
-            // Rochers sombres dispersés
+            // Rochers sombres dispersés avec collision
             const darkRockMaterial = new THREE.MeshLambertMaterial({ color: 0x2c2c3e });
             for (let i = 0; i < 30; i++) {
-                const rockGeometry = new THREE.DodecahedronGeometry(1 + Math.random() * 2, 0);
+                const radius = 1 + Math.random() * 2;
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                const rockGeometry = new THREE.DodecahedronGeometry(radius, 0);
                 const rock = new THREE.Mesh(rockGeometry, darkRockMaterial);
-                rock.position.set(
-                    (Math.random() - 0.5) * 80,
-                    0.5 + Math.random(),
-                    (Math.random() - 0.5) * 80
-                );
+                rock.position.set(x, 0.5 + Math.random(), z);
                 rock.rotation.set(Math.random(), Math.random(), Math.random());
                 rock.castShadow = true;
                 scene.add(rock);
                 levelObjects.push(rock);
+                addSolidObject(x, z, radius * 0.8);
             }
 
             // Champignons lumineux (décoration)
@@ -1946,24 +1981,29 @@
                 scene.add(flower);
                 levelObjects.push(flower);
             }
-            // Quelques arbustes
+            // Quelques arbustes (avec collision)
             for (let i = 0; i < 20; i++) {
-                const bush = new THREE.Mesh(new THREE.SphereGeometry(1 + Math.random(), 8, 8), new THREE.MeshLambertMaterial({ color: 0x2ecc71 }));
-                bush.position.set((Math.random() - 0.5) * 70, 0.5, (Math.random() - 0.5) * 70);
+                const radius = 1 + Math.random();
+                const x = (Math.random() - 0.5) * 70;
+                const z = (Math.random() - 0.5) * 70;
+                const bush = new THREE.Mesh(new THREE.SphereGeometry(radius, 8, 8), new THREE.MeshLambertMaterial({ color: 0x2ecc71 }));
+                bush.position.set(x, 0.5, z);
                 bush.castShadow = true;
                 scene.add(bush);
                 levelObjects.push(bush);
+                addSolidObject(x, z, radius);
             }
-            // Buissons près du bouton
+            // Buissons près du bouton (avec collision)
             const hidingBush = new THREE.Mesh(new THREE.SphereGeometry(2, 8, 8), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
             hidingBush.position.set(14, 1, 9);
             scene.add(hidingBush);
             levelObjects.push(hidingBush);
+            addSolidObject(14, 9, 2);
         }
 
         // === NIVEAU 3: Plage Tropicale ===
         function createBeachLevel() {
-            // Palmiers
+            // Palmiers avec collision
             const createPalm = (x, z) => {
                 const palm = new THREE.Group();
                 const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 5, 8), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
@@ -1980,16 +2020,21 @@
                 palm.position.set(x, 0, z);
                 scene.add(palm);
                 levelObjects.push(palm);
+                addSolidObject(x, z, 0.5); // Collision tronc
             };
             for (let i = 0; i < 25; i++) createPalm((Math.random() - 0.5) * 70, (Math.random() - 0.5) * 70);
             createPalm(-21, 24);
             createPalm(-19, 26);
-            // Rochers de plage
+            // Rochers de plage avec collision
             for (let i = 0; i < 15; i++) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.5 + Math.random()), new THREE.MeshLambertMaterial({ color: 0xbdc3c7 }));
-                rock.position.set((Math.random() - 0.5) * 60, 0.3, (Math.random() - 0.5) * 60);
+                const radius = 0.5 + Math.random();
+                const x = (Math.random() - 0.5) * 60;
+                const z = (Math.random() - 0.5) * 60;
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(radius), new THREE.MeshLambertMaterial({ color: 0xbdc3c7 }));
+                rock.position.set(x, 0.3, z);
                 scene.add(rock);
                 levelObjects.push(rock);
+                addSolidObject(x, z, radius * 0.8);
             }
             // Eau
             const water = new THREE.Mesh(new THREE.PlaneGeometry(100, 40), new THREE.MeshLambertMaterial({ color: 0x3498db, transparent: true, opacity: 0.7 }));
@@ -2096,20 +2141,23 @@
             swampWater.position.y = 0.05;
             scene.add(swampWater);
             levelObjects.push(swampWater);
-            // Îlots
+            // Îlots (pas de collision car on peut marcher dessus)
             for (let i = 0; i < 20; i++) {
                 const island = new THREE.Mesh(new THREE.CylinderGeometry(2 + Math.random() * 2, 3 + Math.random() * 2, 0.5, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
                 island.position.set((Math.random() - 0.5) * 70, 0.2, (Math.random() - 0.5) * 70);
                 scene.add(island);
                 levelObjects.push(island);
             }
-            // Arbres morts
+            // Arbres morts avec collision
             for (let i = 0; i < 15; i++) {
+                const x = (Math.random() - 0.5) * 60;
+                const z = (Math.random() - 0.5) * 60;
                 const deadTree = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.4, 4, 6), new THREE.MeshLambertMaterial({ color: 0x4e342e }));
-                deadTree.position.set((Math.random() - 0.5) * 60, 2, (Math.random() - 0.5) * 60);
+                deadTree.position.set(x, 2, z);
                 deadTree.rotation.z = Math.random() * 0.3 - 0.15;
                 scene.add(deadTree);
                 levelObjects.push(deadTree);
+                addSolidObject(x, z, 0.4);
             }
             // Cachette du bouton
             const hideIsland = new THREE.Mesh(new THREE.CylinderGeometry(3, 4, 0.6, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
@@ -2135,6 +2183,7 @@
                 bamboo.position.set(x, 0, z);
                 scene.add(bamboo);
                 levelObjects.push(bamboo);
+                addSolidObject(x, z, 0.2); // Collision bambou (fin)
             };
             for (let i = 0; i < 150; i++) createBamboo((Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, 4 + Math.random() * 4);
             // Dense autour du bouton
@@ -2143,15 +2192,21 @@
 
         // === NIVEAU 9: Désert Aride ===
         function createDesertLevel() {
-            // Dunes
+            // Dunes avec collision
             for (let i = 0; i < 25; i++) {
-                const dune = new THREE.Mesh(new THREE.SphereGeometry(5 + Math.random() * 8, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xdaa520 }));
-                dune.position.set((Math.random() - 0.5) * 80, 0, (Math.random() - 0.5) * 80);
+                const radius = 5 + Math.random() * 8;
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                const dune = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xdaa520 }));
+                dune.position.set(x, 0, z);
                 scene.add(dune);
                 levelObjects.push(dune);
+                addSolidObject(x, z, radius * 0.7);
             }
-            // Cactus
+            // Cactus avec collision
             for (let i = 0; i < 20; i++) {
+                const x = (Math.random() - 0.5) * 70;
+                const z = (Math.random() - 0.5) * 70;
                 const cactus = new THREE.Group();
                 const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.5, 3, 8), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
                 body.position.y = 1.5;
@@ -2160,20 +2215,22 @@
                 arm.position.set(0.5, 2, 0);
                 arm.rotation.z = -Math.PI / 4;
                 cactus.add(arm);
-                cactus.position.set((Math.random() - 0.5) * 70, 0, (Math.random() - 0.5) * 70);
+                cactus.position.set(x, 0, z);
                 scene.add(cactus);
                 levelObjects.push(cactus);
+                addSolidObject(x, z, 0.5);
             }
-            // Grande dune cachant le bouton
+            // Grande dune cachant le bouton (avec collision)
             const hideDune = new THREE.Mesh(new THREE.SphereGeometry(8, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xdaa520 }));
             hideDune.position.set(-35, 0, 18);
             scene.add(hideDune);
             levelObjects.push(hideDune);
+            addSolidObject(-35, 18, 6);
         }
 
         // === NIVEAU 10: Cimetière Lugubre ===
         function createCemeteryLevel() {
-            // Tombes
+            // Tombes avec collision
             const createTombstone = (x, z, type) => {
                 const tomb = new THREE.Group();
                 if (type === 0) {
@@ -2192,14 +2249,18 @@
                 tomb.rotation.y = Math.random() * 0.3 - 0.15;
                 scene.add(tomb);
                 levelObjects.push(tomb);
+                addSolidObject(x, z, 0.5);
             };
             for (let i = 0; i < 50; i++) createTombstone((Math.random() - 0.5) * 70, (Math.random() - 0.5) * 70, Math.floor(Math.random() * 2));
-            // Arbres morts
+            // Arbres morts avec collision
             for (let i = 0; i < 10; i++) {
+                const x = (Math.random() - 0.5) * 60;
+                const z = (Math.random() - 0.5) * 60;
                 const tree = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 5, 6), new THREE.MeshLambertMaterial({ color: 0x3d3d3d }));
-                tree.position.set((Math.random() - 0.5) * 60, 2.5, (Math.random() - 0.5) * 60);
+                tree.position.set(x, 2.5, z);
                 scene.add(tree);
                 levelObjects.push(tree);
+                addSolidObject(x, z, 0.5);
             }
             // Cachette: groupe de tombes
             for (let i = 0; i < 8; i++) createTombstone(20 + (Math.random() - 0.5) * 6, -35 + (Math.random() - 0.5) * 6, Math.floor(Math.random() * 2));
@@ -2207,7 +2268,7 @@
 
         // === NIVEAU 12: Grotte Souterraine ===
         function createCaveLevel() {
-            // Stalactites et stalagmites
+            // Stalactites (pas de collision, au plafond)
             for (let i = 0; i < 60; i++) {
                 const stalactite = new THREE.Mesh(new THREE.ConeGeometry(0.5, 3 + Math.random() * 3, 6), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
                 stalactite.position.set((Math.random() - 0.5) * 80, 8 + Math.random() * 5, (Math.random() - 0.5) * 80);
@@ -2215,18 +2276,26 @@
                 scene.add(stalactite);
                 levelObjects.push(stalactite);
             }
+            // Stalagmites avec collision
             for (let i = 0; i < 50; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
                 const stalagmite = new THREE.Mesh(new THREE.ConeGeometry(0.4, 2 + Math.random() * 2, 6), new THREE.MeshLambertMaterial({ color: 0x4e342e }));
-                stalagmite.position.set((Math.random() - 0.5) * 80, (1 + Math.random()) / 2, (Math.random() - 0.5) * 80);
+                stalagmite.position.set(x, (1 + Math.random()) / 2, z);
                 scene.add(stalagmite);
                 levelObjects.push(stalagmite);
+                addSolidObject(x, z, 0.4);
             }
-            // Rochers
+            // Rochers avec collision
             for (let i = 0; i < 30; i++) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random() * 2), new THREE.MeshLambertMaterial({ color: 0x3e2723 }));
-                rock.position.set((Math.random() - 0.5) * 70, 0.5, (Math.random() - 0.5) * 70);
+                const radius = 1 + Math.random() * 2;
+                const x = (Math.random() - 0.5) * 70;
+                const z = (Math.random() - 0.5) * 70;
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(radius), new THREE.MeshLambertMaterial({ color: 0x3e2723 }));
+                rock.position.set(x, 0.5, z);
                 scene.add(rock);
                 levelObjects.push(rock);
+                addSolidObject(x, z, radius * 0.8);
             }
             // Plafond
             const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshLambertMaterial({ color: 0x1a1a1a }));
@@ -2243,7 +2312,7 @@
 
         // === NIVEAU 13: Ville Fantôme ===
         function createGhostTownLevel() {
-            // Maisons abandonnées
+            // Maisons abandonnées avec collision
             const createBuilding = (x, z, w, h, d) => {
                 const building = new THREE.Group();
                 const walls = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color: 0x5d5d5d }));
@@ -2256,6 +2325,7 @@
                 building.position.set(x, 0, z);
                 scene.add(building);
                 levelObjects.push(building);
+                addSolidObject(x, z, Math.max(w, d) * 0.6);
             };
             createBuilding(-20, 0, 8, 6, 6);
             createBuilding(15, 10, 6, 5, 5);
@@ -2264,32 +2334,39 @@
             createBuilding(-25, 15, 6, 5, 5);
             createBuilding(0, 25, 8, 6, 7);
             createBuilding(-30, -18, 5, 4, 5);
-            // Lampadaires cassés
+            // Lampadaires cassés avec collision
             for (let i = 0; i < 10; i++) {
+                const x = (Math.random() - 0.5) * 60;
+                const z = (Math.random() - 0.5) * 60;
                 const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 4, 8), new THREE.MeshLambertMaterial({ color: 0x2c2c2c }));
-                lamp.position.set((Math.random() - 0.5) * 60, 2, (Math.random() - 0.5) * 60);
+                lamp.position.set(x, 2, z);
                 lamp.rotation.z = Math.random() * 0.4 - 0.2;
                 scene.add(lamp);
                 levelObjects.push(lamp);
+                addSolidObject(x, z, 0.2);
             }
         }
 
         // === NIVEAU 14: Temple Ancien ===
         function createTempleLevel() {
-            // Structure principale
+            // Structure principale (pas de collision, on peut marcher dessus)
             const base = new THREE.Mesh(new THREE.BoxGeometry(30, 2, 30), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
             base.position.set(0, 1, -20);
             scene.add(base);
             levelObjects.push(base);
-            // Colonnes
+            // Colonnes avec collision
             for (let i = 0; i < 8; i++) {
-                const col = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1, 8, 12), new THREE.MeshLambertMaterial({ color: 0xa1887f }));
                 const angle = (i / 8) * Math.PI * 2;
-                col.position.set(Math.cos(angle) * 12, 5, -20 + Math.sin(angle) * 12);
+                const x = Math.cos(angle) * 12;
+                const z = -20 + Math.sin(angle) * 12;
+                const col = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1, 8, 12), new THREE.MeshLambertMaterial({ color: 0xa1887f }));
+                col.position.set(x, 5, z);
                 scene.add(col);
                 levelObjects.push(col);
+                addSolidObject(x, z, 1);
             }
-            // Statues
+            // Statues avec collision
+            const statuePositions = [[-20, -40], [20, -40], [-20, 0], [20, 0]];
             for (let i = 0; i < 4; i++) {
                 const statue = new THREE.Group();
                 const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 3, 1), new THREE.MeshLambertMaterial({ color: 0x757575 }));
@@ -2298,21 +2375,28 @@
                 const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 8, 8), new THREE.MeshLambertMaterial({ color: 0x757575 }));
                 head.position.y = 3.5;
                 statue.add(head);
-                statue.position.set([-20, 20, -20, 20][i], 0, [-40, -40, 0, 0][i]);
+                statue.position.set(statuePositions[i][0], 0, statuePositions[i][1]);
                 scene.add(statue);
                 levelObjects.push(statue);
+                addSolidObject(statuePositions[i][0], statuePositions[i][1], 1);
             }
-            // Cachette au fond
+            // Cachette au fond (mur avec collision)
             const wall = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 1), new THREE.MeshLambertMaterial({ color: 0x6d4c41 }));
             wall.position.set(35, 2.5, -33);
             scene.add(wall);
             levelObjects.push(wall);
+            // Collision linéaire pour le mur
+            for (let wx = 28; wx <= 42; wx += 2) {
+                addSolidObject(wx, -33, 0.5);
+            }
         }
 
         // === NIVEAU 15: Jungle Dense ===
         function createJungleLevel() {
-            // Arbres géants
+            // Arbres géants avec collision
             for (let i = 0; i < 40; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
                 const tree = new THREE.Group();
                 const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 8 + Math.random() * 4, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
                 trunk.position.y = 4;
@@ -2320,30 +2404,45 @@
                 const canopy = new THREE.Mesh(new THREE.SphereGeometry(4 + Math.random() * 2, 8, 8), new THREE.MeshLambertMaterial({ color: 0x2e7d32 }));
                 canopy.position.y = 10;
                 tree.add(canopy);
-                tree.position.set((Math.random() - 0.5) * 80, 0, (Math.random() - 0.5) * 80);
+                tree.position.set(x, 0, z);
                 scene.add(tree);
                 levelObjects.push(tree);
+                addSolidObject(x, z, 0.8);
             }
-            // Buissons denses
+            // Buissons denses avec collision
             for (let i = 0; i < 80; i++) {
-                const bush = new THREE.Mesh(new THREE.SphereGeometry(1 + Math.random(), 6, 6), new THREE.MeshLambertMaterial({ color: 0x388e3c }));
-                bush.position.set((Math.random() - 0.5) * 80, 0.5, (Math.random() - 0.5) * 80);
+                const radius = 1 + Math.random();
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                const bush = new THREE.Mesh(new THREE.SphereGeometry(radius, 6, 6), new THREE.MeshLambertMaterial({ color: 0x388e3c }));
+                bush.position.set(x, 0.5, z);
                 scene.add(bush);
                 levelObjects.push(bush);
+                addSolidObject(x, z, radius);
             }
-            // Zone très dense pour cacher le bouton
+            // Zone très dense pour cacher le bouton (bouton à -35, 41)
+            // Buissons autour mais pas sur le bouton
             for (let i = 0; i < 20; i++) {
-                const denseBush = new THREE.Mesh(new THREE.SphereGeometry(1.5 + Math.random(), 6, 6), new THREE.MeshLambertMaterial({ color: 0x1b5e20 }));
-                denseBush.position.set(-38 + (Math.random() - 0.5) * 6, 1, 38 + (Math.random() - 0.5) * 6);
+                const radius = 1.5 + Math.random();
+                let x, z;
+                do {
+                    x = -38 + (Math.random() - 0.5) * 10;
+                    z = 38 + (Math.random() - 0.5) * 10;
+                } while (Math.abs(x - (-35)) < 2 && Math.abs(z - 41) < 2); // Éviter la zone du bouton
+                const denseBush = new THREE.Mesh(new THREE.SphereGeometry(radius, 6, 6), new THREE.MeshLambertMaterial({ color: 0x1b5e20 }));
+                denseBush.position.set(x, 1, z);
                 scene.add(denseBush);
                 levelObjects.push(denseBush);
+                addSolidObject(x, z, radius);
             }
         }
 
         // === NIVEAU 16: Montagne Enneigée ===
         function createSnowLevel() {
-            // Sapins enneigés
+            // Sapins enneigés avec collision
             for (let i = 0; i < 35; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
                 const pine = new THREE.Group();
                 const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 2, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
                 trunk.position.y = 1;
@@ -2353,34 +2452,44 @@
                     layer.position.y = 2.5 + j * 1.2;
                     pine.add(layer);
                 }
-                pine.position.set((Math.random() - 0.5) * 80, 0, (Math.random() - 0.5) * 80);
+                pine.position.set(x, 0, z);
                 scene.add(pine);
                 levelObjects.push(pine);
+                addSolidObject(x, z, 0.4);
             }
-            // Rochers enneigés
+            // Rochers enneigés avec collision
             for (let i = 0; i < 25; i++) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random() * 2), new THREE.MeshLambertMaterial({ color: 0xcfd8dc }));
-                rock.position.set((Math.random() - 0.5) * 70, 0.5, (Math.random() - 0.5) * 70);
+                const radius = 1 + Math.random() * 2;
+                const x = (Math.random() - 0.5) * 70;
+                const z = (Math.random() - 0.5) * 70;
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(radius), new THREE.MeshLambertMaterial({ color: 0xcfd8dc }));
+                rock.position.set(x, 0.5, z);
                 scene.add(rock);
                 levelObjects.push(rock);
+                addSolidObject(x, z, radius * 0.8);
             }
-            // Congère cachant le bouton
+            // Congère cachant le bouton (avec collision)
             const snowDrift = new THREE.Mesh(new THREE.SphereGeometry(4, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xffffff }));
             snowDrift.position.set(25, 0, -38);
             scene.add(snowDrift);
             levelObjects.push(snowDrift);
+            addSolidObject(25, -38, 3);
         }
 
         // === NIVEAU 17: Volcan Actif ===
         function createVolcanoLevel() {
-            // Rochers volcaniques
+            // Rochers volcaniques avec collision
             for (let i = 0; i < 40; i++) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random() * 2), new THREE.MeshLambertMaterial({ color: 0x37474f }));
-                rock.position.set((Math.random() - 0.5) * 80, 0.5, (Math.random() - 0.5) * 80);
+                const radius = 1 + Math.random() * 2;
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(radius), new THREE.MeshLambertMaterial({ color: 0x37474f }));
+                rock.position.set(x, 0.5, z);
                 scene.add(rock);
                 levelObjects.push(rock);
+                addSolidObject(x, z, radius * 0.8);
             }
-            // Flaques de lave
+            // Flaques de lave (pas de collision, juste au sol)
             for (let i = 0; i < 15; i++) {
                 const lava = new THREE.Mesh(new THREE.CircleGeometry(2 + Math.random() * 3, 16), new THREE.MeshBasicMaterial({ color: 0xff5722 }));
                 lava.rotation.x = -Math.PI / 2;
@@ -2388,34 +2497,48 @@
                 scene.add(lava);
                 levelObjects.push(lava);
             }
-            // Cratère central
+            // Cratère central avec collision (anneau)
             const crater = new THREE.Mesh(new THREE.TorusGeometry(10, 3, 8, 16), new THREE.MeshLambertMaterial({ color: 0x3e2723 }));
             crater.rotation.x = Math.PI / 2;
             crater.position.set(0, 0.5, 0);
             scene.add(crater);
             levelObjects.push(crater);
+            // Collision en cercle pour le cratère
+            for (let angle = 0; angle < Math.PI * 2; angle += 0.5) {
+                addSolidObject(Math.cos(angle) * 10, Math.sin(angle) * 10, 3);
+            }
             // Lumière orange
             const lavaLight = new THREE.PointLight(0xff5722, 1, 50);
             lavaLight.position.set(0, 5, 0);
             scene.add(lavaLight);
             levelObjects.push(lavaLight);
-            // Cachette
+            // Cachette avec collision (bouton à -43, -40)
             for (let i = 0; i < 8; i++) {
-                const hideRock = new THREE.Mesh(new THREE.DodecahedronGeometry(2 + Math.random()), new THREE.MeshLambertMaterial({ color: 0x37474f }));
-                hideRock.position.set(-40 + (Math.random() - 0.5) * 5, 1, -40 + (Math.random() - 0.5) * 5);
+                const radius = 2 + Math.random();
+                let x, z;
+                do {
+                    x = -40 + (Math.random() - 0.5) * 8;
+                    z = -40 + (Math.random() - 0.5) * 8;
+                } while (Math.abs(x - (-43)) < 3 && Math.abs(z - (-40)) < 3); // Éviter le bouton
+                const hideRock = new THREE.Mesh(new THREE.DodecahedronGeometry(radius), new THREE.MeshLambertMaterial({ color: 0x37474f }));
+                hideRock.position.set(x, 1, z);
                 scene.add(hideRock);
                 levelObjects.push(hideRock);
+                addSolidObject(x, z, radius * 0.8);
             }
         }
 
         // === NIVEAU 19: Dimension Sombre ===
         function createDarkDimensionLevel() {
-            // Piliers flottants
+            // Piliers flottants avec collision
             for (let i = 0; i < 30; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
                 const pillar = new THREE.Mesh(new THREE.BoxGeometry(2, 10 + Math.random() * 10, 2), new THREE.MeshLambertMaterial({ color: 0x1a1a1a }));
-                pillar.position.set((Math.random() - 0.5) * 80, 5, (Math.random() - 0.5) * 80);
+                pillar.position.set(x, 5, z);
                 scene.add(pillar);
                 levelObjects.push(pillar);
+                addSolidObject(x, z, 1.5);
             }
             // Orbes lumineux (seule source de lumière)
             const orbColors = [0x9b59b6, 0xe74c3c, 0x3498db];
@@ -2429,76 +2552,96 @@
                 scene.add(light);
                 levelObjects.push(light);
             }
-            // Structures étranges
+            // Structures étranges avec collision
             for (let i = 0; i < 15; i++) {
+                const x = (Math.random() - 0.5) * 70;
+                const z = (Math.random() - 0.5) * 70;
                 const struct = new THREE.Mesh(new THREE.OctahedronGeometry(2), new THREE.MeshLambertMaterial({ color: 0x2c2c2c }));
-                struct.position.set((Math.random() - 0.5) * 70, 2, (Math.random() - 0.5) * 70);
+                struct.position.set(x, 2, z);
                 struct.rotation.set(Math.random(), Math.random(), Math.random());
                 scene.add(struct);
                 levelObjects.push(struct);
+                addSolidObject(x, z, 1.5);
             }
-            // Cachette
+            // Cachette avec collision (bouton à 41, 41)
             for (let i = 0; i < 6; i++) {
+                let x, z;
+                do {
+                    x = 38 + (Math.random() - 0.5) * 8;
+                    z = 38 + (Math.random() - 0.5) * 8;
+                } while (Math.abs(x - 41) < 3 && Math.abs(z - 41) < 3); // Éviter le bouton
                 const hidePillar = new THREE.Mesh(new THREE.BoxGeometry(3, 15, 3), new THREE.MeshLambertMaterial({ color: 0x0a0a0a }));
-                hidePillar.position.set(38 + (Math.random() - 0.5) * 5, 7.5, 38 + (Math.random() - 0.5) * 5);
+                hidePillar.position.set(x, 7.5, z);
                 scene.add(hidePillar);
                 levelObjects.push(hidePillar);
+                addSolidObject(x, z, 2);
             }
         }
 
         // === NIVEAU 20: Sanctuaire Final (SPÉCIAL - Clé + Porte) ===
         function createFinalLevel() {
-            // Structure centrale majestueuse
+            // Structure centrale majestueuse (pas de collision, on peut marcher dessus)
             const platform = new THREE.Mesh(new THREE.CylinderGeometry(15, 18, 2, 32), new THREE.MeshLambertMaterial({ color: 0x4a148c }));
             platform.position.set(0, 1, 0);
             scene.add(platform);
             levelObjects.push(platform);
 
-            // Colonnes d'or
+            // Colonnes d'or avec collision
             for (let i = 0; i < 12; i++) {
-                const col = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 10, 12), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
                 const angle = (i / 12) * Math.PI * 2;
-                col.position.set(Math.cos(angle) * 20, 5, Math.sin(angle) * 20);
+                const x = Math.cos(angle) * 20;
+                const z = Math.sin(angle) * 20;
+                const col = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 10, 12), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+                col.position.set(x, 5, z);
                 scene.add(col);
                 levelObjects.push(col);
+                addSolidObject(x, z, 0.8);
             }
 
-            // === CLÉ CACHÉE ===
+            // === CLÉ CACHÉE (pas de collision, on peut la ramasser) ===
             level20Key = new THREE.Group();
-            // Corps de la clé
-            const keyHandle = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.1, 8, 16), new THREE.MeshLambertMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.3 }));
+            // Corps de la clé (plus grosse et plus brillante)
+            const keyMaterial = new THREE.MeshLambertMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.5 });
+            const keyHandle = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.15, 8, 16), keyMaterial);
             keyHandle.rotation.x = Math.PI / 2;
             level20Key.add(keyHandle);
-            const keyShaft = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1, 0.1), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
-            keyShaft.position.y = -0.5;
+            const keyShaft = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.5, 0.15), keyMaterial);
+            keyShaft.position.y = -0.75;
             level20Key.add(keyShaft);
-            const keyTooth1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.1, 0.1), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
-            keyTooth1.position.set(0.1, -0.9, 0);
+            const keyTooth1 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.15, 0.15), keyMaterial);
+            keyTooth1.position.set(0.15, -1.3, 0);
             level20Key.add(keyTooth1);
-            const keyTooth2 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.1), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
-            keyTooth2.position.set(0.05, -0.75, 0);
+            const keyTooth2 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.15, 0.15), keyMaterial);
+            keyTooth2.position.set(0.1, -1.1, 0);
             level20Key.add(keyTooth2);
-            // Position cachée de la clé (derrière des rochers au sud-ouest)
-            level20Key.position.set(-30, 1.5, 25);
-            level20Key.rotation.z = Math.PI / 4;
+            // Position de la clé (à côté des rochers, visible mais partiellement cachée)
+            level20Key.position.set(-27, 2.5, 28);
+            level20Key.rotation.z = Math.PI / 6;
             scene.add(level20Key);
             levelObjects.push(level20Key);
 
-            // Lumière pour la clé
-            const keyLight = new THREE.PointLight(0xffd700, 0.5, 8);
-            keyLight.position.set(-30, 2, 25);
+            // Lumière forte pour la clé (pour qu'elle brille)
+            const keyLight = new THREE.PointLight(0xffd700, 1, 15);
+            keyLight.position.set(-27, 4, 28);
             scene.add(keyLight);
             levelObjects.push(keyLight);
 
-            // Rochers cachant la clé
+            // Rochers près de la clé (avec collision) - pas SUR la clé
             for (let i = 0; i < 5; i++) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5 + Math.random()), new THREE.MeshLambertMaterial({ color: 0x311b92 }));
-                rock.position.set(-30 + (Math.random() - 0.5) * 6, 1, 25 + (Math.random() - 0.5) * 6);
+                const radius = 1.5 + Math.random();
+                let x, z;
+                do {
+                    x = -30 + (Math.random() - 0.5) * 8;
+                    z = 25 + (Math.random() - 0.5) * 8;
+                } while (Math.abs(x - (-27)) < 2.5 && Math.abs(z - 28) < 2.5); // Éviter la clé
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(radius), new THREE.MeshLambertMaterial({ color: 0x311b92 }));
+                rock.position.set(x, 1, z);
                 scene.add(rock);
                 levelObjects.push(rock);
+                addSolidObject(x, z, radius * 0.8);
             }
 
-            // === FAUSSES GROSSES PIERRES (pour tromper le joueur) ===
+            // === FAUSSES GROSSES PIERRES (pour tromper le joueur) avec collision ===
             const fakeRockPositions = [
                 { x: -35, z: -30 },
                 { x: -25, z: 35 },
@@ -2525,6 +2668,7 @@
                 fakeRock.castShadow = true;
                 scene.add(fakeRock);
                 levelObjects.push(fakeRock);
+                addSolidObject(pos.x, pos.z, 5); // Grande collision pour les grosses pierres
             });
 
             // === GROSSE PIERRE AVEC PORTE CACHÉE (la vraie!) ===
@@ -2537,6 +2681,9 @@
             level20Rock.position.set(35, 0, -35);
             scene.add(level20Rock);
             levelObjects.push(level20Rock);
+            // Collision grosse pierre (on garde la référence pour la supprimer plus tard)
+            level20RockCollision = { x: 35, z: -35, radius: 6 };
+            solidObjects.push(level20RockCollision);
 
             // === PORTE CACHÉE (dans la pierre) ===
             level20Door = new THREE.Group();
@@ -2558,16 +2705,22 @@
             scene.add(level20Door);
             levelObjects.push(level20Door);
 
-            // Décoration: rochers mystiques
+            // Décoration: rochers mystiques avec collision
             for (let i = 0; i < 25; i++) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random()), new THREE.MeshLambertMaterial({ color: 0x311b92 }));
-                rock.position.set((Math.random() - 0.5) * 70, 0.5, (Math.random() - 0.5) * 70);
+                const radius = 1 + Math.random();
+                const x = (Math.random() - 0.5) * 70;
+                const z = (Math.random() - 0.5) * 70;
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(radius), new THREE.MeshLambertMaterial({ color: 0x311b92 }));
+                rock.position.set(x, 0.5, z);
                 scene.add(rock);
                 levelObjects.push(rock);
+                addSolidObject(x, z, radius * 0.8);
             }
 
-            // Arbres mystiques
+            // Arbres mystiques avec collision
             for (let i = 0; i < 15; i++) {
+                const x = (Math.random() - 0.5) * 60;
+                const z = (Math.random() - 0.5) * 60;
                 const tree = new THREE.Group();
                 const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 5, 8), new THREE.MeshLambertMaterial({ color: 0x4a148c }));
                 trunk.position.y = 2.5;
@@ -2575,9 +2728,10 @@
                 const leaves = new THREE.Mesh(new THREE.SphereGeometry(2, 8, 8), new THREE.MeshLambertMaterial({ color: 0x7b1fa2 }));
                 leaves.position.y = 6;
                 tree.add(leaves);
-                tree.position.set((Math.random() - 0.5) * 60, 0, (Math.random() - 0.5) * 60);
+                tree.position.set(x, 0, z);
                 scene.add(tree);
                 levelObjects.push(tree);
+                addSolidObject(x, z, 0.5);
             }
 
             // Lumière ambiante spéciale
@@ -2618,8 +2772,13 @@
                     // Animation d'ouverture de porte
                     level20Door.rotation.y = -Math.PI / 2;
                     level20Door.position.x += 1.5;
-                    // Cacher la grosse pierre, révéler le bouton
+                    // Cacher la grosse pierre et SUPPRIMER SA COLLISION
                     level20Rock.visible = false;
+                    if (level20RockCollision) {
+                        const idx = solidObjects.indexOf(level20RockCollision);
+                        if (idx > -1) solidObjects.splice(idx, 1);
+                    }
+                    // Révéler le bouton
                     level20ButtonHidden = false;
                     redButton.visible = true;
                     document.getElementById('hintText').textContent = "🚪 Porte ouverte ! Le bouton est révélé ! 🔴";
@@ -2847,9 +3006,30 @@
                 player.rotation.y = Math.atan2(moveX, moveZ);
             }
 
+            // Sauvegarde position avant mouvement
+            const oldX = player.position.x;
+            const oldZ = player.position.z;
+
             // Apply movement
             player.position.x += moveX;
             player.position.z += moveZ;
+
+            // === COLLISION AVEC OBJETS SOLIDES ===
+            const playerRadius = 0.5; // Rayon de collision du joueur
+            for (const obj of solidObjects) {
+                const dx = player.position.x - obj.x;
+                const dz = player.position.z - obj.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                const minDist = playerRadius + obj.radius;
+
+                if (distance < minDist && distance > 0) {
+                    // Repousser le joueur hors de l'objet
+                    const pushX = (dx / distance) * (minDist - distance);
+                    const pushZ = (dz / distance) * (minDist - distance);
+                    player.position.x += pushX;
+                    player.position.z += pushZ;
+                }
+            }
 
             // Apply gravity
             playerVelocity.y -= gravity;
