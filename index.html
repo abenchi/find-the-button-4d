@@ -927,6 +927,7 @@
             window.addEventListener('mouseup', onMouseUp);
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('contextmenu', (e) => e.preventDefault()); // Désactiver menu contextuel
+            window.addEventListener('wheel', onMouseWheel); // Zoom avec molette
 
             // UI Event listeners
             document.getElementById('playBtn').addEventListener('click', startGame);
@@ -2981,6 +2982,17 @@
                 lastMouseX = event.clientX;
                 lastMouseY = event.clientY;
             }
+        }
+
+        function onMouseWheel(event) {
+            if (!isPlaying || isFirstPerson) return; // Pas de zoom en première personne
+
+            // Zoom avec la molette
+            const zoomSpeed = 0.5;
+            cameraDistance += event.deltaY * 0.01 * zoomSpeed;
+
+            // Limiter le zoom entre 3 et 25
+            cameraDistance = Math.max(3, Math.min(25, cameraDistance));
         }
 
         function backToMenu() {
