@@ -2298,14 +2298,15 @@
 
         // === NIVEAU 7: Forêt de Bambou ===
         function createBambooLevel() {
-            const createBamboo = (x, z, height) => {
+            // Bambou SANS collision (pour la performance)
+            const createBambooVisual = (x, z, height) => {
                 const bamboo = new THREE.Group();
                 const segments = Math.floor(height / 1.5);
                 for (let i = 0; i < segments; i++) {
-                    const segment = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1.4, 8), new THREE.MeshLambertMaterial({ color: 0x7cb342 }));
+                    const segment = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1.4, 6), new THREE.MeshLambertMaterial({ color: 0x7cb342 }));
                     segment.position.y = i * 1.5 + 0.7;
                     bamboo.add(segment);
-                    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.03, 8, 16), new THREE.MeshLambertMaterial({ color: 0x558b2f }));
+                    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.03, 6, 12), new THREE.MeshLambertMaterial({ color: 0x558b2f }));
                     ring.rotation.x = Math.PI / 2;
                     ring.position.y = i * 1.5;
                     bamboo.add(ring);
@@ -2313,11 +2314,29 @@
                 bamboo.position.set(x, 0, z);
                 scene.add(bamboo);
                 levelObjects.push(bamboo);
-                addSolidObject(x, z, 0.2); // Collision bambou (fin)
+                // PAS de collision pour les bambous visuels
             };
-            for (let i = 0; i < 150; i++) createBamboo((Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, 4 + Math.random() * 4);
-            // Dense autour du bouton
-            for (let i = 0; i < 30; i++) createBamboo(-25 + (Math.random() - 0.5) * 8, -30 + (Math.random() - 0.5) * 8, 5 + Math.random() * 3);
+
+            // Bambous partout (300 sans collision pour la performance)
+            for (let i = 0; i < 300; i++) createBambooVisual((Math.random() - 0.5) * 85, (Math.random() - 0.5) * 85, 5 + Math.random() * 5);
+
+            // Zones denses pour tromper le joueur (plusieurs fausses cachettes)
+            const denseZones = [
+                { x: -25, z: -30 },  // Vraie cachette (bouton)
+                { x: 20, z: 25 },    // Fausse cachette
+                { x: -30, z: 20 },   // Fausse cachette
+                { x: 30, z: -25 },   // Fausse cachette
+                { x: -15, z: 35 },   // Fausse cachette
+                { x: 35, z: 10 },    // Fausse cachette
+                { x: -35, z: -15 },  // Fausse cachette
+                { x: 10, z: -35 },   // Fausse cachette
+            ];
+
+            denseZones.forEach(zone => {
+                for (let i = 0; i < 40; i++) {
+                    createBambooVisual(zone.x + (Math.random() - 0.5) * 10, zone.z + (Math.random() - 0.5) * 10, 6 + Math.random() * 4);
+                }
+            });
         }
 
         // === NIVEAU 9: Désert Aride ===
