@@ -2498,11 +2498,21 @@
 
         // === NIVEAU 14: Temple Ancien ===
         function createTempleLevel() {
-            // Structure principale (pas de collision, on peut marcher dessus)
+            // Structure principale (plateforme sur laquelle on peut marcher)
             const base = new THREE.Mesh(new THREE.BoxGeometry(30, 2, 30), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
             base.position.set(0, 1, -20);
             scene.add(base);
             levelObjects.push(base);
+            // Ajouter comme plateforme pour pouvoir marcher dessus
+            platforms.push({
+                mesh: base,
+                minX: -15,
+                maxX: 15,
+                minZ: -35,
+                maxZ: -5,
+                y: 2,
+                blockSides: true // Bloquer les côtés quand on est au sol
+            });
             // Colonnes avec collision
             for (let i = 0; i < 8; i++) {
                 const angle = (i / 8) * Math.PI * 2;
@@ -2767,11 +2777,23 @@
 
         // === NIVEAU 20: Sanctuaire Final (SPÉCIAL - Clé + Porte) ===
         function createFinalLevel() {
-            // Structure centrale majestueuse (pas de collision, on peut marcher dessus)
-            const platform = new THREE.Mesh(new THREE.CylinderGeometry(15, 18, 2, 32), new THREE.MeshLambertMaterial({ color: 0x4a148c }));
-            platform.position.set(0, 1, 0);
-            scene.add(platform);
-            levelObjects.push(platform);
+            // Structure centrale majestueuse (plateforme sur laquelle on peut marcher)
+            const centralPlatform = new THREE.Mesh(new THREE.CylinderGeometry(15, 18, 2, 32), new THREE.MeshLambertMaterial({ color: 0x4a148c }));
+            centralPlatform.position.set(0, 1, 0);
+            scene.add(centralPlatform);
+            levelObjects.push(centralPlatform);
+            // Ajouter comme plateforme circulaire
+            platforms.push({
+                mesh: centralPlatform,
+                minX: -15,
+                maxX: 15,
+                minZ: -15,
+                maxZ: 15,
+                y: 2,
+                circular: true,
+                radius: 15,
+                blockSides: true // Bloquer les côtés quand on est au sol
+            });
 
             // Colonnes d'or avec collision
             for (let i = 0; i < 12; i++) {
@@ -3256,13 +3278,36 @@
                 }
             }
 
-            // Check platform collisions (for level 5)
-            if (currentLevel === 5) {
+            // Check platform collisions (for levels 5, 14, 20)
+            if (currentLevel === 5 || currentLevel === 14 || currentLevel === 20) {
                 let onPlatform = false;
                 platforms.forEach(platform => {
-                    if (player.position.x >= platform.minX && player.position.x <= platform.maxX &&
-                        player.position.z >= platform.minZ && player.position.z <= platform.maxZ) {
-                        if (player.position.y <= platform.y && player.position.y > platform.y - 2) {
+                    let isOnPlatformArea = false;
+                    let distFromCenter = 0;
+                    let isNearEdge = false;
+
+                    // Vérification circulaire pour les plateformes rondes
+                    if (platform.circular) {
+                        distFromCenter = Math.sqrt(player.position.x * player.position.x + player.position.z * player.position.z);
+                        isOnPlatformArea = distFromCenter <= platform.radius;
+                        isNearEdge = distFromCenter <= platform.radius + 1 && distFromCenter > platform.radius - 1;
+                    } else {
+                        // Vérification rectangulaire standard
+                        isOnPlatformArea = player.position.x >= platform.minX && player.position.x <= platform.maxX &&
+                            player.position.z >= platform.minZ && player.position.z <= platform.maxZ;
+                        // Près du bord ?
+                        const nearX = player.position.x >= platform.minX - 1 && player.position.x <= platform.maxX + 1;
+                        const nearZ = player.position.z >= platform.minZ - 1 && player.position.z <= platform.maxZ + 1;
+                        isNearEdge = nearX && nearZ && !isOnPlatformArea;
+                    }
+
+                    // Si on est sur la plateforme ou près du bord et qu'on marche vers elle
+                    if (isOnPlatformArea || isNearEdge) {
+                        // Monte automatiquement sur la plateforme quand on s'approche
+                        if (player.position.y < platform.y) {
+                            groundLevel = Math.max(groundLevel, platform.y);
+                            onPlatform = true;
+                        } else if (player.position.y <= platform.y + 0.5) {
                             groundLevel = platform.y;
                             onPlatform = true;
                         }
