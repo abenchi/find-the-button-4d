@@ -3105,8 +3105,8 @@
             const zoomSpeed = 2.5;
             cameraDistance += event.deltaY * 0.01 * zoomSpeed;
 
-            // Limiter le zoom entre 3 et 25
-            cameraDistance = Math.max(3, Math.min(25, cameraDistance));
+            // Limiter le zoom entre 3 et 12 (max réduit pour ne pas voir toute la map)
+            cameraDistance = Math.max(3, Math.min(12, cameraDistance));
         }
 
         function backToMenu() {
