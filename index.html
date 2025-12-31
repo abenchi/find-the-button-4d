@@ -3099,8 +3099,8 @@
         function onMouseWheel(event) {
             if (!isPlaying || isFirstPerson) return; // Pas de zoom en première personne
 
-            // Zoom avec la molette
-            const zoomSpeed = 0.5;
+            // Zoom avec la molette (plus rapide)
+            const zoomSpeed = 2.5;
             cameraDistance += event.deltaY * 0.01 * zoomSpeed;
 
             // Limiter le zoom entre 3 et 25
