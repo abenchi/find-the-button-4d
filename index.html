@@ -1334,14 +1334,24 @@
         }
 
         function createBeachCluster(x, z) {
-            // Palmiers et rochers de plage
+            // Palmiers avec feuilles et rochers de plage
             for (let i = 0; i < 2; i++) {
                 const px = x + (Math.random() - 0.5) * 5;
                 const pz = z + (Math.random() - 0.5) * 5;
                 const palm = new THREE.Group();
+                // Tronc
                 const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 4, 8), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
                 trunk.position.y = 2;
+                trunk.rotation.z = Math.random() * 0.2 - 0.1;
                 palm.add(trunk);
+                // Feuilles (6 feuilles autour du sommet)
+                for (let j = 0; j < 6; j++) {
+                    const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.25, 2.5, 4), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
+                    leaf.position.set(0, 4, 0);
+                    leaf.rotation.z = Math.PI / 3;
+                    leaf.rotation.y = (j / 6) * Math.PI * 2;
+                    palm.add(leaf);
+                }
                 palm.position.set(px, 0, pz);
                 scene.add(palm); levelObjects.push(palm);
                 addSolidObject(px, pz, 0.4);
