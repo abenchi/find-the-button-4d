@@ -1570,9 +1570,9 @@
             scene.background = new THREE.Color(config.skyColor);
             scene.fog = new THREE.FogExp2(config.fogColor, config.fogDensity);
 
-            // Ground
+            // Ground (visible des deux côtés pour éviter la transparence)
             const groundGeometry = new THREE.PlaneGeometry(100, 100);
-            const groundMaterial = new THREE.MeshLambertMaterial({ color: config.groundColor });
+            const groundMaterial = new THREE.MeshLambertMaterial({ color: config.groundColor, side: THREE.DoubleSide });
             const ground = new THREE.Mesh(groundGeometry, groundMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
