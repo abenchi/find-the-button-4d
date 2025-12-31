@@ -1320,7 +1320,7 @@
                 const bush = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 8), new THREE.MeshLambertMaterial({ color: 0x2ecc71 }));
                 bush.position.set(bx, r * 0.5, bz);
                 scene.add(bush); levelObjects.push(bush);
-                addSolidObject(bx, bz, r);
+                addSolidObject(bx, bz, r, r); // Hauteur = rayon du buisson
             }
         }
 
@@ -1354,7 +1354,7 @@
                 }
                 palm.position.set(px, 0, pz);
                 scene.add(palm); levelObjects.push(palm);
-                addSolidObject(px, pz, 0.4);
+                addSolidObject(px, pz, 0.4, 5); // Palmier = 5 de haut
             }
             // Rochers de plage
             for (let i = 0; i < 3; i++) {
@@ -1364,7 +1364,7 @@
                 const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(r), new THREE.MeshLambertMaterial({ color: 0xbdc3c7 }));
                 rock.position.set(rx, r * 0.3, rz);
                 scene.add(rock); levelObjects.push(rock);
-                addSolidObject(rx, rz, r * 0.8);
+                addSolidObject(rx, rz, r * 0.8, r); // Rocher = hauteur du rayon
             }
         }
 
@@ -1376,7 +1376,7 @@
                 const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1.2, 16), new THREE.MeshLambertMaterial({ color: 0x8B4513 }));
                 barrel.position.set(bx, 0.6, bz);
                 scene.add(barrel); levelObjects.push(barrel);
-                addSolidObject(bx, bz, 0.5);
+                addSolidObject(bx, bz, 0.5, 1.2); // Tonneau = 1.2 de haut
             }
         }
 
@@ -1389,7 +1389,7 @@
                 tree.position.set(tx, 2, tz);
                 tree.rotation.z = Math.random() * 0.3;
                 scene.add(tree); levelObjects.push(tree);
-                addSolidObject(tx, tz, 0.4);
+                addSolidObject(tx, tz, 0.4, 4); // Arbre mort = 4 de haut
             }
         }
 
@@ -1401,7 +1401,7 @@
                 const bamboo = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 5 + Math.random() * 3, 8), new THREE.MeshLambertMaterial({ color: 0x7cb342 }));
                 bamboo.position.set(bx, 2.5, bz);
                 scene.add(bamboo); levelObjects.push(bamboo);
-                addSolidObject(bx, bz, 0.15);
+                addSolidObject(bx, bz, 0.15, 6); // Bambou = 6 de haut
             }
         }
 
@@ -1410,14 +1410,14 @@
             const dune = new THREE.Mesh(new THREE.SphereGeometry(4 + Math.random() * 3, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xdaa520 }));
             dune.position.set(x, 0, z);
             scene.add(dune); levelObjects.push(dune);
-            addSolidObject(x, z, 3);
+            addSolidObject(x, z, 3, 4); // Dune = 4 de haut
             // Cactus
             const cx = x + (Math.random() - 0.5) * 8;
             const cz = z + (Math.random() - 0.5) * 8;
             const cactus = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 2, 8), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
             cactus.position.set(cx, 1, cz);
             scene.add(cactus); levelObjects.push(cactus);
-            addSolidObject(cx, cz, 0.4);
+            addSolidObject(cx, cz, 0.4, 2); // Cactus = 2 de haut
         }
 
         function createCemeteryCluster(x, z) {
@@ -1428,7 +1428,7 @@
                 const tomb = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 0.2), new THREE.MeshLambertMaterial({ color: 0x7f8c8d }));
                 tomb.position.set(tx, 0.75, tz);
                 scene.add(tomb); levelObjects.push(tomb);
-                addSolidObject(tx, tz, 0.5);
+                addSolidObject(tx, tz, 0.5, 1.5); // Tombe = 1.5 de haut
             }
         }
 
@@ -1441,7 +1441,7 @@
                 const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, h, 8), new THREE.MeshLambertMaterial({ color: 0x808080 }));
                 pillar.position.set(px, h / 2, pz);
                 scene.add(pillar); levelObjects.push(pillar);
-                addSolidObject(px, pz, 0.8);
+                addSolidObject(px, pz, 0.8, h); // Pilier = hauteur variable
             }
         }
 
@@ -1454,7 +1454,7 @@
                 const stalagmite = new THREE.Mesh(new THREE.ConeGeometry(0.4, h, 6), new THREE.MeshLambertMaterial({ color: 0x4e342e }));
                 stalagmite.position.set(sx, h / 2, sz);
                 scene.add(stalagmite); levelObjects.push(stalagmite);
-                addSolidObject(sx, sz, 0.4);
+                addSolidObject(sx, sz, 0.4, h); // Stalagmite = hauteur variable
             }
         }
 
@@ -1463,7 +1463,7 @@
             const struct = new THREE.Mesh(new THREE.BoxGeometry(3, 2, 3), new THREE.MeshLambertMaterial({ color: 0x5d5d5d }));
             struct.position.set(x, 1, z);
             scene.add(struct); levelObjects.push(struct);
-            addSolidObject(x, z, 2);
+            addSolidObject(x, z, 2, 2); // Structure = 2 de haut
         }
 
         function createSnowCluster(x, z) {
@@ -1482,7 +1482,7 @@
                 }
                 pine.position.set(px, 0, pz);
                 scene.add(pine); levelObjects.push(pine);
-                addSolidObject(px, pz, 0.3);
+                addSolidObject(px, pz, 0.3, 6); // Sapin = 6 de haut
             }
         }
 
@@ -1495,7 +1495,7 @@
                 const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(r), new THREE.MeshLambertMaterial({ color: 0x37474f }));
                 rock.position.set(rx, r * 0.5, rz);
                 scene.add(rock); levelObjects.push(rock);
-                addSolidObject(rx, rz, r * 0.8);
+                addSolidObject(rx, rz, r * 0.8, r); // Rocher
             }
             // Petite flaque de lave
             const lava = new THREE.Mesh(new THREE.CircleGeometry(1 + Math.random(), 16), new THREE.MeshBasicMaterial({ color: 0xff5722 }));
@@ -1514,7 +1514,7 @@
                 const crystal = new THREE.Mesh(new THREE.ConeGeometry(0.6, h, 6), new THREE.MeshLambertMaterial({ color: colors[i], transparent: true, opacity: 0.7 }));
                 crystal.position.set(cx, h / 2, cz);
                 scene.add(crystal); levelObjects.push(crystal);
-                addSolidObject(cx, cz, 0.6);
+                addSolidObject(cx, cz, 0.6, h); // Cristal = hauteur variable
             }
         }
 
@@ -1526,7 +1526,7 @@
                 const pillar = new THREE.Mesh(new THREE.BoxGeometry(2, 8, 2), new THREE.MeshLambertMaterial({ color: 0x1a1a1a }));
                 pillar.position.set(px, 4, pz);
                 scene.add(pillar); levelObjects.push(pillar);
-                addSolidObject(px, pz, 1.5);
+                addSolidObject(px, pz, 1.5, 8); // Pilier noir = 8 de haut
             }
         }
 
@@ -1539,7 +1539,7 @@
                 const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(r), new THREE.MeshLambertMaterial({ color: color }));
                 rock.position.set(rx, r * 0.5, rz);
                 scene.add(rock); levelObjects.push(rock);
-                addSolidObject(rx, rz, r * 0.8);
+                addSolidObject(rx, rz, r * 0.8, r); // Rocher
             }
         }
 
@@ -1658,7 +1658,7 @@
             scene.add(tree);
             levelObjects.push(tree);
             // Collision pour le tronc
-            addSolidObject(x, z, 0.5 * scale);
+            addSolidObject(x, z, 0.5 * scale, 6 * scale); // Arbre = 6 * scale de haut
             return tree;
         }
 
@@ -1673,7 +1673,7 @@
             scene.add(rock);
             levelObjects.push(rock);
             // Collision pour le rocher
-            addSolidObject(x, z, scale * 0.8);
+            addSolidObject(x, z, scale * 0.8, scale); // Rocher = scale de haut
             return rock;
         }
 
@@ -1709,8 +1709,8 @@
             house.rotation.y = rotation;
             scene.add(house);
             levelObjects.push(house);
-            // Collision pour la maison (rayon basé sur la diagonale)
-            addSolidObject(x, z, 4);
+            // Grande collision - maison infranchissable (hauteur 100 = impossible à sauter)
+            addSolidObject(x, z, 4, 100);
             return house;
         }
 
@@ -1739,7 +1739,7 @@
             scene.add(pillar);
             levelObjects.push(pillar);
             // Collision pour le pilier
-            addSolidObject(x, z, 1);
+            addSolidObject(x, z, 1, height); // Pilier = hauteur variable
             return pillar;
         }
 
@@ -1797,7 +1797,7 @@
                 bush.castShadow = true;
                 scene.add(bush);
                 levelObjects.push(bush);
-                addSolidObject(x, z, radius);
+                addSolidObject(x, z, radius, radius); // Buisson = rayon de haut
             }
         }
 
@@ -1833,7 +1833,7 @@
             cart.position.set(-18, 0, 20);
             scene.add(cart);
             levelObjects.push(cart);
-            addSolidObject(-18, 20, 2.5); // Collision charrette
+            addSolidObject(-18, 20, 2.5, 2); // Charrette = 2 de haut
 
             // Barrels avec collision
             const barrelGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1.2, 16);
@@ -1845,7 +1845,7 @@
                 barrel.castShadow = true;
                 scene.add(barrel);
                 levelObjects.push(barrel);
-                addSolidObject(pos[0], pos[1], 0.5);
+                addSolidObject(pos[0], pos[1], 0.5, 1.2); // Tonneau = 1.2 de haut
             });
 
             // Fences avec collision
@@ -1856,7 +1856,7 @@
                 post.castShadow = true;
                 scene.add(post);
                 levelObjects.push(post);
-                addSolidObject(i, 30, 0.3);
+                addSolidObject(i, 30, 0.3, 2); // Poteau = 2 de haut
             }
 
             // Some trees
@@ -1905,7 +1905,7 @@
                 cactus.castShadow = true;
                 scene.add(cactus);
                 levelObjects.push(cactus);
-                addSolidObject(x, z, 0.4);
+                addSolidObject(x, z, 0.4, 3); // Cactus = 3 de haut
             }
         }
 
@@ -1944,7 +1944,7 @@
                 levelObjects.push(fallen);
                 // Collision linéaire pour pilier tombé
                 for (let offset = -2.5; offset <= 2.5; offset += 1) {
-                    addSolidObject(x + offset, z, 1);
+                    addSolidObject(x + offset, z, 1, 2); // Pilier tombé
                 }
             }
 
@@ -1963,7 +1963,7 @@
                 block.receiveShadow = true;
                 scene.add(block);
                 levelObjects.push(block);
-                addSolidObject(x, z, size * 0.6);
+                addSolidObject(x, z, size * 0.6, size); // Bloc de ruine
             }
         }
 
@@ -1994,7 +1994,7 @@
                 crystal.position.set(x, 0, z);
                 scene.add(crystal);
                 levelObjects.push(crystal);
-                addSolidObject(x, z, 0.8); // Collision cristal
+                addSolidObject(x, z, 0.8, 3); // Cristal = 3 de haut
             };
 
             // Fonction pour créer un mur de cristaux
@@ -2056,7 +2056,7 @@
                 rock.castShadow = true;
                 scene.add(rock);
                 levelObjects.push(rock);
-                addSolidObject(x, z, radius * 0.8);
+                addSolidObject(x, z, radius * 0.8, radius); // Rocher/objet
             }
 
             // Champignons lumineux (décoration)
@@ -2132,14 +2132,14 @@
                 bush.castShadow = true;
                 scene.add(bush);
                 levelObjects.push(bush);
-                addSolidObject(x, z, radius);
+                addSolidObject(x, z, radius, radius); // Buisson
             }
             // Buissons près du bouton (avec collision)
             const hidingBush = new THREE.Mesh(new THREE.SphereGeometry(2, 8, 8), new THREE.MeshLambertMaterial({ color: 0x27ae60 }));
             hidingBush.position.set(14, 1, 9);
             scene.add(hidingBush);
             levelObjects.push(hidingBush);
-            addSolidObject(14, 9, 2);
+            addSolidObject(14, 9, 2, 2); // Gros buisson = 2 de haut
         }
 
         // === NIVEAU 3: Plage Tropicale ===
@@ -2161,7 +2161,7 @@
                 palm.position.set(x, 0, z);
                 scene.add(palm);
                 levelObjects.push(palm);
-                addSolidObject(x, z, 0.5); // Collision tronc
+                addSolidObject(x, z, 0.5, 5); // Palmier = 5 de haut
             };
             for (let i = 0; i < 25; i++) createPalm((Math.random() - 0.5) * 70, (Math.random() - 0.5) * 70);
             createPalm(-21, 24);
@@ -2175,7 +2175,7 @@
                 rock.position.set(x, 0.3, z);
                 scene.add(rock);
                 levelObjects.push(rock);
-                addSolidObject(x, z, radius * 0.8);
+                addSolidObject(x, z, radius * 0.8, radius); // Rocher/objet
             }
             // Eau
             const water = new THREE.Mesh(new THREE.PlaneGeometry(100, 40), new THREE.MeshLambertMaterial({ color: 0x3498db, transparent: true, opacity: 0.7 }));
@@ -2310,7 +2310,7 @@
                 deadTree.rotation.z = Math.random() * 0.3 - 0.15;
                 scene.add(deadTree);
                 levelObjects.push(deadTree);
-                addSolidObject(x, z, 0.4);
+                addSolidObject(x, z, 0.4, 4); // Arbre mort = 4 de haut
             }
             // Cachette du bouton (plus grande île)
             const hideIsland = new THREE.Mesh(new THREE.CylinderGeometry(3, 4, 0.6, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
@@ -2382,7 +2382,7 @@
                 dune.position.set(x, 0, z);
                 scene.add(dune);
                 levelObjects.push(dune);
-                addSolidObject(x, z, radius * 0.7);
+                addSolidObject(x, z, radius * 0.7, radius); // Dune
             }
             // Cactus avec collision
             for (let i = 0; i < 20; i++) {
@@ -2399,14 +2399,14 @@
                 cactus.position.set(x, 0, z);
                 scene.add(cactus);
                 levelObjects.push(cactus);
-                addSolidObject(x, z, 0.5);
+                addSolidObject(x, z, 0.5, 3); // Cactus/objet = 3 de haut
             }
             // Grande dune cachant le bouton (avec collision)
             const hideDune = new THREE.Mesh(new THREE.SphereGeometry(8, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xdaa520 }));
             hideDune.position.set(-35, 0, 18);
             scene.add(hideDune);
             levelObjects.push(hideDune);
-            addSolidObject(-35, 18, 6);
+            addSolidObject(-35, 18, 6, 8); // Grande dune
         }
 
         // === NIVEAU 10: Cimetière Lugubre ===
@@ -2430,7 +2430,7 @@
                 tomb.rotation.y = Math.random() * 0.3 - 0.15;
                 scene.add(tomb);
                 levelObjects.push(tomb);
-                addSolidObject(x, z, 0.5);
+                addSolidObject(x, z, 0.5, 3); // Cactus/objet = 3 de haut
             };
             for (let i = 0; i < 50; i++) createTombstone((Math.random() - 0.5) * 70, (Math.random() - 0.5) * 70, Math.floor(Math.random() * 2));
             // Arbres morts avec collision
@@ -2441,7 +2441,7 @@
                 tree.position.set(x, 2.5, z);
                 scene.add(tree);
                 levelObjects.push(tree);
-                addSolidObject(x, z, 0.5);
+                addSolidObject(x, z, 0.5, 3); // Cactus/objet = 3 de haut
             }
             // Cachette: groupe de tombes
             for (let i = 0; i < 8; i++) createTombstone(20 + (Math.random() - 0.5) * 6, -35 + (Math.random() - 0.5) * 6, Math.floor(Math.random() * 2));
@@ -2465,7 +2465,7 @@
                 stalagmite.position.set(x, (1 + Math.random()) / 2, z);
                 scene.add(stalagmite);
                 levelObjects.push(stalagmite);
-                addSolidObject(x, z, 0.4);
+                addSolidObject(x, z, 0.4, 2); // Petit objet
             }
             // Rochers avec collision
             for (let i = 0; i < 30; i++) {
@@ -2476,7 +2476,7 @@
                 rock.position.set(x, 0.5, z);
                 scene.add(rock);
                 levelObjects.push(rock);
-                addSolidObject(x, z, radius * 0.8);
+                addSolidObject(x, z, radius * 0.8, radius); // Rocher/objet
             }
             // Plafond
             const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshLambertMaterial({ color: 0x1a1a1a }));
@@ -2506,7 +2506,8 @@
                 building.position.set(x, 0, z);
                 scene.add(building);
                 levelObjects.push(building);
-                addSolidObject(x, z, Math.max(w, d) * 0.6);
+                // Collision avec hauteur = 100 (infranchissable)
+                addSolidObject(x, z, Math.max(w, d) * 0.6, 100);
             };
             createBuilding(-20, 0, 8, 6, 6);
             createBuilding(15, 10, 6, 5, 5);
@@ -2524,7 +2525,7 @@
                 lamp.rotation.z = Math.random() * 0.4 - 0.2;
                 scene.add(lamp);
                 levelObjects.push(lamp);
-                addSolidObject(x, z, 0.2);
+                addSolidObject(x, z, 0.2, 1); // Petit objet
             }
         }
 
@@ -2554,7 +2555,7 @@
                 col.position.set(x, 5, z);
                 scene.add(col);
                 levelObjects.push(col);
-                addSolidObject(x, z, 1);
+                addSolidObject(x, z, 1, 8); // Colonne = 8 de haut
             }
             // Statues avec collision
             const statuePositions = [[-20, -40], [20, -40], [-20, 0], [20, 0]];
@@ -2569,7 +2570,7 @@
                 statue.position.set(statuePositions[i][0], 0, statuePositions[i][1]);
                 scene.add(statue);
                 levelObjects.push(statue);
-                addSolidObject(statuePositions[i][0], statuePositions[i][1], 1);
+                addSolidObject(statuePositions[i][0], statuePositions[i][1], 1, 4); // Statue = 4 de haut
             }
             // Cachette au fond (mur avec collision)
             const wall = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 1), new THREE.MeshLambertMaterial({ color: 0x6d4c41 }));
@@ -2578,7 +2579,7 @@
             levelObjects.push(wall);
             // Collision linéaire pour le mur
             for (let wx = 28; wx <= 42; wx += 2) {
-                addSolidObject(wx, -33, 0.5);
+                addSolidObject(wx, -33, 0.5, 5); // Mur = 5 de haut
             }
         }
 
@@ -2598,7 +2599,7 @@
                 tree.position.set(x, 0, z);
                 scene.add(tree);
                 levelObjects.push(tree);
-                addSolidObject(x, z, 0.8);
+                addSolidObject(x, z, 0.8, 2); // Objet moyen
             }
             // Buissons denses avec collision
             for (let i = 0; i < 80; i++) {
@@ -2609,7 +2610,7 @@
                 bush.position.set(x, 0.5, z);
                 scene.add(bush);
                 levelObjects.push(bush);
-                addSolidObject(x, z, radius);
+                addSolidObject(x, z, radius, radius * 2); // Buisson = diamètre
             }
             // Zone très dense pour cacher le bouton (bouton à -35, 41)
             // Buissons autour mais pas sur le bouton
@@ -2624,7 +2625,7 @@
                 denseBush.position.set(x, 1, z);
                 scene.add(denseBush);
                 levelObjects.push(denseBush);
-                addSolidObject(x, z, radius);
+                addSolidObject(x, z, radius, radius * 2); // Buisson = diamètre
             }
         }
 
@@ -2646,7 +2647,7 @@
                 pine.position.set(x, 0, z);
                 scene.add(pine);
                 levelObjects.push(pine);
-                addSolidObject(x, z, 0.4);
+                addSolidObject(x, z, 0.4, 2); // Petit objet
             }
             // Rochers enneigés avec collision
             for (let i = 0; i < 25; i++) {
@@ -2657,14 +2658,14 @@
                 rock.position.set(x, 0.5, z);
                 scene.add(rock);
                 levelObjects.push(rock);
-                addSolidObject(x, z, radius * 0.8);
+                addSolidObject(x, z, radius * 0.8, radius); // Rocher/objet
             }
             // Congère cachant le bouton (avec collision)
             const snowDrift = new THREE.Mesh(new THREE.SphereGeometry(4, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xffffff }));
             snowDrift.position.set(25, 0, -38);
             scene.add(snowDrift);
             levelObjects.push(snowDrift);
-            addSolidObject(25, -38, 3);
+            addSolidObject(25, -38, 3, 4); // Gros rocher de neige
         }
 
         // === NIVEAU 17: Volcan Actif ===
@@ -2718,7 +2719,7 @@
                 rock.position.set(x, 0.5, z);
                 scene.add(rock);
                 levelObjects.push(rock);
-                addSolidObject(x, z, radius * 0.8);
+                addSolidObject(x, z, radius * 0.8, radius); // Rocher/objet
             }
 
             // Flaques de lave autour du volcan
@@ -2753,7 +2754,7 @@
                 hideRock.position.set(x, 1, z);
                 scene.add(hideRock);
                 levelObjects.push(hideRock);
-                addSolidObject(x, z, radius * 0.8);
+                addSolidObject(x, z, radius * 0.8, radius); // Rocher/objet
             }
         }
 
@@ -2767,7 +2768,7 @@
                 pillar.position.set(x, 5, z);
                 scene.add(pillar);
                 levelObjects.push(pillar);
-                addSolidObject(x, z, 1.5);
+                addSolidObject(x, z, 1.5, 3); // Rocher volcanique
             }
             // Orbes lumineux (seule source de lumière)
             const orbColors = [0x9b59b6, 0xe74c3c, 0x3498db];
@@ -2790,7 +2791,7 @@
                 struct.rotation.set(Math.random(), Math.random(), Math.random());
                 scene.add(struct);
                 levelObjects.push(struct);
-                addSolidObject(x, z, 1.5);
+                addSolidObject(x, z, 1.5, 3); // Rocher volcanique
             }
             // Cachette avec collision (bouton à 41, 41)
             for (let i = 0; i < 6; i++) {
@@ -2803,7 +2804,7 @@
                 hidePillar.position.set(x, 7.5, z);
                 scene.add(hidePillar);
                 levelObjects.push(hidePillar);
-                addSolidObject(x, z, 2);
+                addSolidObject(x, z, 2, 3); // Gros rocher
             }
         }
 
@@ -2836,7 +2837,7 @@
                 col.position.set(x, 5, z);
                 scene.add(col);
                 levelObjects.push(col);
-                addSolidObject(x, z, 0.8);
+                addSolidObject(x, z, 0.8, 2); // Objet moyen
             }
 
             // === CLÉ CACHÉE (pas de collision, on peut la ramasser) ===
@@ -2879,7 +2880,7 @@
                 rock.position.set(x, 1, z);
                 scene.add(rock);
                 levelObjects.push(rock);
-                addSolidObject(x, z, radius * 0.8);
+                addSolidObject(x, z, radius * 0.8, radius); // Rocher/objet
             }
 
             // === FAUSSES GROSSES PIERRES (pour tromper le joueur) avec collision ===
@@ -2909,7 +2910,7 @@
                 fakeRock.castShadow = true;
                 scene.add(fakeRock);
                 levelObjects.push(fakeRock);
-                addSolidObject(pos.x, pos.z, 5); // Grande collision pour les grosses pierres
+                addSolidObject(pos.x, pos.z, 5, 6); // Grande pierre = 6 de haut
             });
 
             // === GROSSE PIERRE AVEC PORTE CACHÉE (la vraie!) ===
@@ -2955,7 +2956,7 @@
                 rock.position.set(x, 0.5, z);
                 scene.add(rock);
                 levelObjects.push(rock);
-                addSolidObject(x, z, radius * 0.8);
+                addSolidObject(x, z, radius * 0.8, radius); // Rocher/objet
             }
 
             // Arbres mystiques avec collision
@@ -2972,7 +2973,7 @@
                 tree.position.set(x, 0, z);
                 scene.add(tree);
                 levelObjects.push(tree);
-                addSolidObject(x, z, 0.5);
+                addSolidObject(x, z, 0.5, 3); // Cactus/objet = 3 de haut
             }
 
             // Lumière ambiante spéciale
@@ -3283,16 +3284,29 @@
                 const minDist = playerRadius + obj.radius;
                 const objHeight = obj.height || 1.5;
 
+                // Vérifier si on est dans la zone de collision horizontale
                 if (distance < minDist && distance > 0) {
-                    // Si le joueur est AU-DESSUS de l'objet, il peut se tenir dessus
-                    if (player.position.y >= objHeight - 0.5 && player.position.y <= objHeight + 1) {
-                        // Atterrir sur l'objet
-                        if (distance < obj.radius + 0.3) { // Plus proche du centre
+                    // Si le joueur est CLAIREMENT AU-DESSUS de l'objet (peut passer par-dessus)
+                    if (player.position.y > objHeight + 0.5) {
+                        // Pas de collision, le joueur passe au-dessus
+                        continue;
+                    }
+
+                    // Si le joueur est proche du sommet et tombe dessus
+                    if (player.position.y >= objHeight - 0.3 && player.position.y <= objHeight + 0.5) {
+                        // Peut atterrir sur l'objet SI suffisamment au centre
+                        if (distance < obj.radius * 0.8) {
                             groundLevel = Math.max(groundLevel, objHeight);
+                        } else {
+                            // Trop sur le bord, repousser
+                            const pushX = (dx / distance) * (minDist - distance);
+                            const pushZ = (dz / distance) * (minDist - distance);
+                            player.position.x += pushX;
+                            player.position.z += pushZ;
                         }
                     }
-                    // Si le joueur est EN-DESSOUS du sommet de l'objet, collision horizontale
-                    else if (player.position.y < objHeight - 0.5) {
+                    // Sinon, le joueur est en-dessous = collision horizontale
+                    else if (player.position.y < objHeight - 0.3) {
                         // Repousser le joueur hors de l'objet
                         const pushX = (dx / distance) * (minDist - distance);
                         const pushZ = (dz / distance) * (minDist - distance);
