@@ -2577,9 +2577,9 @@
             wall.position.set(35, 2.5, -33);
             scene.add(wall);
             levelObjects.push(wall);
-            // Collision linéaire pour le mur
-            for (let wx = 28; wx <= 42; wx += 2) {
-                addSolidObject(wx, -33, 0.5, 5); // Mur = 5 de haut
+            // Collision linéaire pour le mur (rayon plus large pour couvrir tout le mur)
+            for (let wx = 28; wx <= 42; wx += 3) {
+                addSolidObject(wx, -33, 2, 100); // Mur infranchissable
             }
         }
 
