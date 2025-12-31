@@ -2271,12 +2271,24 @@
             swampWater.position.y = 0.05;
             scene.add(swampWater);
             levelObjects.push(swampWater);
-            // Îlots (pas de collision car on peut marcher dessus)
+            // Îlots (on peut marcher dessus)
             for (let i = 0; i < 20; i++) {
-                const island = new THREE.Mesh(new THREE.CylinderGeometry(2 + Math.random() * 2, 3 + Math.random() * 2, 0.5, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
-                island.position.set((Math.random() - 0.5) * 70, 0.2, (Math.random() - 0.5) * 70);
+                const radiusTop = 2 + Math.random() * 2;
+                const x = (Math.random() - 0.5) * 70;
+                const z = (Math.random() - 0.5) * 70;
+                const island = new THREE.Mesh(new THREE.CylinderGeometry(radiusTop, radiusTop + 1, 0.5, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
+                island.position.set(x, 0.2, z);
                 scene.add(island);
                 levelObjects.push(island);
+                // Ajouter comme plateforme circulaire
+                platforms.push({
+                    mesh: island,
+                    circular: true,
+                    radius: radiusTop,
+                    centerX: x,
+                    centerZ: z,
+                    y: 0.45
+                });
             }
             // Arbres morts avec collision
             for (let i = 0; i < 15; i++) {
@@ -2289,11 +2301,20 @@
                 levelObjects.push(deadTree);
                 addSolidObject(x, z, 0.4);
             }
-            // Cachette du bouton
+            // Cachette du bouton (plus grande île)
             const hideIsland = new THREE.Mesh(new THREE.CylinderGeometry(3, 4, 0.6, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
             hideIsland.position.set(28, 0.2, 28);
             scene.add(hideIsland);
             levelObjects.push(hideIsland);
+            // Plateforme pour l'île cachette
+            platforms.push({
+                mesh: hideIsland,
+                circular: true,
+                radius: 3,
+                centerX: 28,
+                centerZ: 28,
+                y: 0.5
+            });
         }
 
         // === NIVEAU 7: Forêt de Bambou ===
@@ -3278,8 +3299,8 @@
                 }
             }
 
-            // Check platform collisions (for levels 5, 14, 20)
-            if (currentLevel === 5 || currentLevel === 14 || currentLevel === 20) {
+            // Check platform collisions (for levels 5, 6, 14, 20)
+            if (currentLevel === 5 || currentLevel === 6 || currentLevel === 14 || currentLevel === 20) {
                 let onPlatform = false;
                 platforms.forEach(platform => {
                     let isOnPlatformArea = false;
@@ -3288,7 +3309,12 @@
 
                     // Vérification circulaire pour les plateformes rondes
                     if (platform.circular) {
-                        distFromCenter = Math.sqrt(player.position.x * player.position.x + player.position.z * player.position.z);
+                        // Utiliser centerX/centerZ si défini, sinon 0
+                        const cx = platform.centerX || 0;
+                        const cz = platform.centerZ || 0;
+                        const dx = player.position.x - cx;
+                        const dz = player.position.z - cz;
+                        distFromCenter = Math.sqrt(dx * dx + dz * dz);
                         isOnPlatformArea = distFromCenter <= platform.radius;
                         isNearEdge = distFromCenter <= platform.radius + 1 && distFromCenter > platform.radius - 1;
                     } else {
@@ -3308,7 +3334,7 @@
                             groundLevel = Math.max(groundLevel, platform.y);
                             onPlatform = true;
                         } else if (player.position.y <= platform.y + 0.5) {
-                            groundLevel = platform.y;
+                            groundLevel = Math.max(groundLevel, platform.y);
                             onPlatform = true;
                         }
                     }
