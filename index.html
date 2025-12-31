@@ -756,7 +756,7 @@
             <div class="controls-info">
                 <span>↑↓←→</span> ou <span>WASD</span> Déplacer &nbsp;|&nbsp;
                 <span>ESPACE</span> Sauter &nbsp;|&nbsp;
-                <span>CLIC/ENTRÉE</span> Appuyer
+                <span>CLIC</span> Interagir
             </div>
         </div>
 
@@ -785,7 +785,7 @@
 
     <div id="timer">00:00</div>
     <div id="crosshair"></div>
-    <div id="buttonIndicator">🔴 CLIC GAUCHE ou ENTRÉE pour appuyer !</div>
+    <div id="buttonIndicator" style="display:none !important;"></div>
     <div id="keyIndicator"
         style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:15px 30px;font-family:'Orbitron',sans-serif;font-size:1.2rem;background:rgba(255,215,0,0.9);color:#333;border-radius:10px;display:none;z-index:60;animation:bounce 0.5s ease-in-out infinite;">
         🔑 CLIC ou ENTRÉE pour prendre la clé !</div>
@@ -3191,11 +3191,7 @@
                 playerVelocity.y = jumpForce;
                 isGrounded = false;
             }
-            // Appuyer sur le bouton avec Entrée
-            if (event.code === 'Enter' && canPressButton && isPlaying) {
-                winLevel();
-            }
-            // Interagir avec clé/porte au niveau 20
+            // Interagir avec clé/porte au niveau 20 (Entrée seulement pour niveau 20)
             if (event.code === 'Enter' && currentLevel === 20 && isPlaying) {
                 interactLevel20();
             }
@@ -3215,8 +3211,20 @@
             // Ignorer les clics sur les boutons UI
             if (event.target.tagName === 'BUTTON') return;
 
-            if (event.button === 0 && canPressButton && isPlaying) {
-                winLevel();
+            // Clic gauche - vérifier si on clique SUR le bouton avec raycasting
+            if (event.button === 0 && isPlaying && redButton) {
+                // Raycasting pour détecter si on clique sur le bouton
+                const raycaster = new THREE.Raycaster();
+                const mouse = new THREE.Vector2();
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+
+                // Vérifier si on clique sur le bouton ET qu'on est proche
+                const intersects = raycaster.intersectObject(redButton, true);
+                if (intersects.length > 0 && canPressButton) {
+                    winLevel();
+                }
             }
             // Interagir avec clé/porte au niveau 20
             if (event.button === 0 && currentLevel === 20 && isPlaying) {
@@ -3444,18 +3452,14 @@
             const dz = player.position.z - redButton.position.z;
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-            if (distance < 3) {
+            if (distance < 6) {
                 canPressButton = true;
-                document.getElementById('buttonIndicator').style.display = 'block';
-                document.getElementById('crosshair').classList.add('active');
-
-                // Animate button glow
+                // Pas de notification - le joueur doit trouver et cliquer sur le bouton
+                // Animation du bouton quand on est proche (sans indiquer au joueur)
                 const pulse = 1 + Math.sin(Date.now() * 0.01) * 0.1;
                 redButton.scale.set(pulse, pulse, pulse);
             } else {
                 canPressButton = false;
-                document.getElementById('buttonIndicator').style.display = 'none';
-                document.getElementById('crosshair').classList.remove('active');
                 redButton.scale.set(1, 1, 1);
             }
         }
