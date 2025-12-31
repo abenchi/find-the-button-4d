@@ -1544,8 +1544,9 @@
         }
 
         // Fonction helper pour ajouter un objet solide avec collision
-        function addSolidObject(x, z, radius) {
-            solidObjects.push({ x: x, z: z, radius: radius });
+        // height = hauteur de l'objet sur lequel on peut se tenir debout
+        function addSolidObject(x, z, radius, height = 1.5) {
+            solidObjects.push({ x: x, z: z, radius: radius, height: height });
         }
 
         function loadLevel(levelNum) {
@@ -3265,29 +3266,41 @@
             player.position.x += moveX;
             player.position.z += moveZ;
 
+            // Apply gravity
+            playerVelocity.y -= gravity;
+            player.position.y += playerVelocity.y;
+
+            // Ground collision - déclaré AVANT les vérifications
+            let groundLevel = 0;
+
             // === COLLISION AVEC OBJETS SOLIDES ===
             const playerRadius = 0.5; // Rayon de collision du joueur
+
             for (const obj of solidObjects) {
                 const dx = player.position.x - obj.x;
                 const dz = player.position.z - obj.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
                 const minDist = playerRadius + obj.radius;
+                const objHeight = obj.height || 1.5;
 
                 if (distance < minDist && distance > 0) {
-                    // Repousser le joueur hors de l'objet
-                    const pushX = (dx / distance) * (minDist - distance);
-                    const pushZ = (dz / distance) * (minDist - distance);
-                    player.position.x += pushX;
-                    player.position.z += pushZ;
+                    // Si le joueur est AU-DESSUS de l'objet, il peut se tenir dessus
+                    if (player.position.y >= objHeight - 0.5 && player.position.y <= objHeight + 1) {
+                        // Atterrir sur l'objet
+                        if (distance < obj.radius + 0.3) { // Plus proche du centre
+                            groundLevel = Math.max(groundLevel, objHeight);
+                        }
+                    }
+                    // Si le joueur est EN-DESSOUS du sommet de l'objet, collision horizontale
+                    else if (player.position.y < objHeight - 0.5) {
+                        // Repousser le joueur hors de l'objet
+                        const pushX = (dx / distance) * (minDist - distance);
+                        const pushZ = (dz / distance) * (minDist - distance);
+                        player.position.x += pushX;
+                        player.position.z += pushZ;
+                    }
                 }
             }
-
-            // Apply gravity
-            playerVelocity.y -= gravity;
-            player.position.y += playerVelocity.y;
-
-            // Ground collision
-            let groundLevel = 0;
 
             // Niveau 17 (Volcan) - surface du cône tronqué
             if (currentLevel === 17) {
