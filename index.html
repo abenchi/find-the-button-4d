@@ -1169,6 +1169,77 @@
             return levelConfigs[getLevelKey(currentChapter, currentLevel)];
         }
 
+        // ===== SYSTÈME DE ROUTAGE URL =====
+        function updateURL(state) {
+            const url = new URL(window.location);
+            if (state === 'menu') {
+                url.hash = '';
+            } else if (state.startsWith('chapter=')) {
+                url.hash = state;
+            } else if (state.startsWith('play=')) {
+                url.hash = state;
+            }
+            history.pushState({ state: state }, '', url);
+        }
+
+        function handleURLChange() {
+            const hash = window.location.hash.slice(1); // Enlever le #
+
+            if (!hash || hash === 'menu') {
+                // Retour au menu
+                backToMenuFromURL();
+            } else if (hash.startsWith('chapter=')) {
+                const chapter = parseInt(hash.split('=')[1]);
+                if (chapter >= 1 && chapter <= 5) {
+                    showLevelSelectFromURL(chapter);
+                }
+            } else if (hash.startsWith('play=')) {
+                const parts = hash.split('=')[1].split('-');
+                const chapter = parseInt(parts[0]);
+                const level = parseInt(parts[1]);
+                if (chapter >= 1 && chapter <= 5 && level >= 1 && level <= 20) {
+                    currentChapter = chapter;
+                    currentLevel = level;
+                    selectedChapter = chapter;
+                    selectedLevel = level;
+                    startGameFromURL();
+                }
+            }
+        }
+
+        function backToMenuFromURL() {
+            isPlaying = false;
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('menuScreen').style.display = 'flex';
+            document.getElementById('levelSelectScreen').style.display = 'none';
+            document.getElementById('winScreen').style.display = 'none';
+            document.getElementById('gameUI').style.display = 'none';
+            document.getElementById('cameraBtn').style.display = 'none';
+            document.getElementById('menuBtn').style.display = 'none';
+            document.getElementById('crosshair').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('buttonIndicator').style.display = 'none';
+            document.getElementById('keyIndicator').style.display = 'none';
+            document.getElementById('doorIndicator').style.display = 'none';
+        }
+
+        function showLevelSelectFromURL(chapter) {
+            isPlaying = false;
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('winScreen').style.display = 'none';
+            document.getElementById('gameUI').style.display = 'none';
+            document.getElementById('cameraBtn').style.display = 'none';
+            document.getElementById('menuBtn').style.display = 'none';
+            document.getElementById('crosshair').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            showLevelSelect(chapter);
+        }
+
+        function startGameFromURL() {
+            document.getElementById('winScreen').style.display = 'none';
+            startGame();
+        }
+
         // Initialize Three.js
         function init() {
             scene = new THREE.Scene();
@@ -1223,12 +1294,14 @@
             document.querySelectorAll('.chapter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     selectedChapter = parseInt(btn.dataset.chapter);
+                    updateURL(`chapter=${selectedChapter}`);
                     showLevelSelect(selectedChapter);
                 });
             });
 
             // Back to chapters button
             document.getElementById('backToChaptersBtn').addEventListener('click', () => {
+                updateURL('menu');
                 document.getElementById('levelSelectScreen').style.display = 'none';
                 document.getElementById('menuScreen').style.display = 'flex';
             });
@@ -1237,8 +1310,19 @@
             document.getElementById('playLevelBtn').addEventListener('click', () => {
                 currentChapter = selectedChapter;
                 currentLevel = selectedLevel;
+                updateURL(`play=${currentChapter}-${currentLevel}`);
                 startGame();
             });
+
+            // Écouter les changements d'URL (bouton retour/avant du navigateur)
+            window.addEventListener('popstate', (event) => {
+                handleURLChange();
+            });
+
+            // Gérer l'URL initiale au chargement
+            if (window.location.hash) {
+                handleURLChange();
+            }
 
             animate();
         }
@@ -6770,6 +6854,7 @@
         }
 
         function backToMenu() {
+            updateURL('menu');
             document.getElementById('menuScreen').style.display = 'flex';
             document.getElementById('levelSelectScreen').style.display = 'none';
             document.getElementById('winScreen').style.display = 'none';
@@ -6809,6 +6894,7 @@
                 document.getElementById('timer').style.display = 'none';
 
                 // Afficher le menu de sélection du nouveau chapitre
+                updateURL(`chapter=${currentChapter}`);
                 showLevelSelect(currentChapter);
                 isPlaying = false;
                 return;
@@ -6820,6 +6906,9 @@
 
             selectedLevel = currentLevel;
             selectedChapter = currentChapter;
+
+            // Mettre à jour l'URL
+            updateURL(`play=${currentChapter}-${currentLevel}`);
 
             // IMPORTANT: Réinitialiser canPressButton pour éviter le bug de victoire instantanée
             canPressButton = false;
