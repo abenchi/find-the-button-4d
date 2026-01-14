@@ -1400,7 +1400,7 @@
 
         function updateWalkAnimation() {
             // Vérifier si le joueur marche
-            const isMoving = keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight || keys.KeyW || keys.KeyA || keys.KeyS || keys.KeyD;
+            const isMoving = keys.KeyW || keys.KeyA || keys.KeyS || keys.KeyD;
 
             if (isMoving && isGrounded) {
                 isWalking = true;
@@ -6920,21 +6920,39 @@
             let moveX = 0;
             let moveZ = 0;
 
-            if (keys.ArrowUp || keys.KeyW) {
+            // Déplacement avec WASD uniquement
+            if (keys.KeyW) {
                 moveX -= Math.sin(angle);
                 moveZ -= Math.cos(angle);
             }
-            if (keys.ArrowDown || keys.KeyS) {
+            if (keys.KeyS) {
                 moveX += Math.sin(angle);
                 moveZ += Math.cos(angle);
             }
-            if (keys.ArrowLeft || keys.KeyA) {
+            if (keys.KeyA) {
                 moveX -= Math.cos(angle);
                 moveZ += Math.sin(angle);
             }
-            if (keys.ArrowRight || keys.KeyD) {
+            if (keys.KeyD) {
                 moveX += Math.cos(angle);
                 moveZ -= Math.sin(angle);
+            }
+
+            // Rotation de la caméra avec les flèches
+            const rotationSpeed = 0.03;
+            if (keys.ArrowLeft) {
+                cameraYaw += rotationSpeed;
+            }
+            if (keys.ArrowRight) {
+                cameraYaw -= rotationSpeed;
+            }
+            if (keys.ArrowUp) {
+                cameraPitch -= rotationSpeed;
+                cameraPitch = Math.max(-0.5, Math.min(1.2, cameraPitch));
+            }
+            if (keys.ArrowDown) {
+                cameraPitch += rotationSpeed;
+                cameraPitch = Math.max(-0.5, Math.min(1.2, cameraPitch));
             }
 
             // Normalize and apply speed
